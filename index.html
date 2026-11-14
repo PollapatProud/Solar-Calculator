@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="คำนวณขนาดระบบโซลาร์เซลล์จากค่าไฟ: ขนาดแผง อินเวอร์เตอร์ แบตเตอรี่ ค่าไฟหลังติดตั้ง และระยะคืนทุน โดย บริษัท บลู ซิสเต็ม เทคโนโลยี จำกัด โทร 086-998-1200">
+<meta name="theme-color" content="#0f1d2b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="คำนวณขนาดระบบโซลาร์ | Blue System Technology">
+<meta property="og:description" content="คำนวณขนาดระบบโซลาร์เซลล์จากค่าไฟ: ขนาดแผง อินเวอร์เตอร์ แบตเตอรี่ ค่าไฟหลังติดตั้ง และระยะคืนทุน โดย บริษัท บลู ซิสเต็ม เทคโนโลยี จำกัด โทร 086-998-1200">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2040%2040%22%3E%3Crect%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%228%22%20fill%3D%22%230f1d2b%22/%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%2215%22%20r%3D%226.5%22%20fill%3D%22%23f2a900%22/%3E%3Cpath%20d%3D%22M5%2036%2010%2025h20l5%2011z%22%20fill%3D%22%233987e5%22/%3E%3C/svg%3E">
+<title>คำนวณขนาดระบบโซลาร์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: inputs on the left as numbered worksheet steps; results on the right as a dark equipment nameplate (the one bold element), money tiles and an energy-flow bar below. */
+:root {
+  --bg: #edf0f3;
+  --surface: #ffffff;
+  --surface-2: #f5f7f9;
+  --ink: #0f1d2b;
+  --muted: #536170;
+  --line: #d2d9e1;
+  --sun: #f2a900;
+  --sun-ink: #7a4f00;
+  --night: #34408f;
+  --focus: #1f6feb;
+  --plate-bg: #0f1d2b;
+  --plate-ink: #f3f6f9;
+  --plate-muted: #a6b3c1;
+  --plate-line: #2a3c4f;
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --s-off: #b7c0ca;
+  --good: #0a7a0a;
+  --warn-bg: #fff4d6;
+  --warn-line: #e9b949;
+  --crit-bg: #fde8e8;
+  --crit-line: #d03b3b;
+  --info-bg: #e8f0fb;
+  --info-line: #6c9be0;
+  --font-display: "Chakra Petch", "IBM Plex Sans Thai", "Leelawadee UI", Tahoma, sans-serif;
+  --font-body: "IBM Plex Sans Thai", "Noto Sans Thai", "Leelawadee UI", Tahoma, system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1117;
+    --surface: #131b24;
+    --surface-2: #19232e;
+    --ink: #e5ebf1;
+    --muted: #97a5b4;
+    --line: #2a3745;
+    --sun: #f5b52e;
+    --sun-ink: #f7c75a;
+    --night: #8590ec;
+    --focus: #6ea8ff;
+    --plate-bg: #1b2836;
+    --plate-ink: #f3f6f9;
+    --plate-muted: #a6b3c1;
+    --plate-line: #33475b;
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --s-off: #4b5664;
+    --good: #3fc23f;
+    --warn-bg: #3a2f12;
+    --warn-line: #c9952a;
+    --crit-bg: #3d1818;
+    --crit-line: #e66767;
+    --info-bg: #15263d;
+    --info-line: #4f7fc4;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1117;
+  --surface: #131b24;
+  --surface-2: #19232e;
+  --ink: #e5ebf1;
+  --muted: #97a5b4;
+  --line: #2a3745;
+  --sun: #f5b52e;
+  --sun-ink: #f7c75a;
+  --night: #8590ec;
+  --focus: #6ea8ff;
+  --plate-bg: #1b2836;
+  --plate-ink: #f3f6f9;
+  --plate-muted: #a6b3c1;
+  --plate-line: #33475b;
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --s-off: #4b5664;
+  --good: #3fc23f;
+  --warn-bg: #3a2f12;
+  --warn-line: #c9952a;
+  --crit-bg: #3d1818;
+  --crit-line: #e66767;
+  --info-bg: #15263d;
+  --info-line: #4f7fc4;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, legend, summary { font-family: var(--font-display); text-wrap: balance; }
+.num, .tnum, input[type="number"], td, .tile b, .plate dd { font-variant-numeric: tabular-nums; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.top {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 28px 20px 18px;
+  display: grid;
+  gap: 6px;
+}
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: .14em;
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.top h1 { margin: 0; font-size: clamp(28px, 4vw, 40px); line-height: 1.15; font-weight: 700; }
+.top p { margin: 0; max-width: 68ch; color: var(--muted); }
+
+.layout {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(340px, .92fr);
+  gap: 22px;
+  align-items: start;
+}
+.inputs { display: grid; gap: 16px; min-width: 0; }
+
+.step {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 18px 20px;
+  margin: 0;
+  min-width: 0;
+}
+.step > legend, .step > summary {
+  font-size: 18px;
+  font-weight: 600;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+fieldset.step > legend { float: left; width: 100%; margin-bottom: 14px; }
+fieldset.step > legend + * { clear: both; }
+.stepno {
+  display: inline-grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 15px;
+  font-weight: 700;
+  flex: none;
+}
+details.step > summary { cursor: pointer; list-style: none; }
+details.step > summary::-webkit-details-marker { display: none; }
+details.step > summary::after { content: "แสดง"; margin-left: auto; font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
+details.step[open] > summary::after { content: "ซ่อน"; }
+details.step[open] > summary { margin-bottom: 14px; }
+
+.stack { display: grid; gap: 14px; }
+.row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+.field { display: grid; gap: 6px; }
+.field > label, .field-label { font-weight: 500; font-size: 14px; }
+.hint { margin: 0; font-size: 13px; color: var(--muted); }
+.input-unit {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.input-unit:focus-within { outline: 2px solid var(--focus); outline-offset: 1px; }
+.input-unit input, .input-unit select {
+  border: 0; background: transparent; padding: 9px 11px; min-width: 0; flex: 1; outline: none;
+}
+.input-unit span {
+  padding: 9px 11px; color: var(--muted); font-size: 13px; border-left: 1px solid var(--line); white-space: nowrap; display: flex; align-items: center;
+}
+.input-unit.big input { font-family: var(--font-display); font-size: 22px; font-weight: 600; padding: 8px 12px; }
+select.plain { border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); padding: 9px 11px; width: 100%; min-width: 0; max-width: 100%; text-overflow: ellipsis; }
+.row2 > *, .field, .stack > * { min-width: 0; }
+
+/* segmented */
+.seg { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; }
+.seg label { flex: 1 1 140px; position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg span { display: block; text-align: center; padding: 8px 10px; border-radius: 7px; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; }
+.seg input:checked + span { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12), inset 0 0 0 1px var(--line); }
+.seg input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+/* 24h day/night strip */
+.dn { display: grid; gap: 8px; }
+.dn-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.dn-bar { display: flex; height: 40px; border-radius: 8px; overflow: hidden; gap: 2px; background: var(--surface); }
+.dn-bar div { display: flex; align-items: center; padding: 0 10px; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; min-width: 0; transition: width .2s ease; }
+.dn-day { background: var(--sun); color: #1c1300; }
+.dn-night { background: var(--night); color: #fff; justify-content: flex-end; }
+.dn input[type="range"] { width: 100%; accent-color: var(--sun); margin: 0; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--focus); text-decoration: underline; cursor: pointer; font-size: 13px; }
+.linkbtn[hidden] { display: none; }
+
+/* appliance table */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; }
+.app-table { min-width: 560px; font-size: 14px; }
+.app-table th { text-align: left; font-weight: 500; font-size: 12.5px; color: var(--muted); background: var(--surface-2); padding: 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.app-table td { padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.app-table tr:last-child td { border-bottom: 0; }
+.app-table input { width: 100%; border: 1px solid transparent; background: transparent; border-radius: 6px; padding: 6px; }
+.app-table input:hover { border-color: var(--line); }
+.app-table input:focus { border-color: var(--focus); background: var(--surface-2); outline: none; }
+.app-table input[type="number"] { text-align: right; }
+.app-table .c-name { min-width: 150px; }
+.app-table .c-w { width: 84px; }
+.app-table .c-q { width: 64px; }
+.app-table .c-h { width: 78px; }
+.app-table .c-k { width: 78px; text-align: right; padding-right: 10px; color: var(--muted); }
+.app-table .c-x { width: 40px; text-align: center; }
+.icon-btn { border: 0; background: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; color: var(--muted); font-size: 18px; line-height: 1; }
+.icon-btn:hover { background: var(--crit-bg); color: var(--crit-line); }
+.add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.add-row select { flex: 1 1 220px; }
+.btn {
+  border: 1px solid var(--ink); background: var(--ink); color: var(--surface);
+  border-radius: 8px; padding: 9px 14px; font-weight: 600; cursor: pointer;
+}
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:hover { filter: brightness(1.12); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); }
+.chip b { font-weight: 600; }
+
+/* system cards */
+.sys { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.sys label { position: relative; display: grid; gap: 4px; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; cursor: pointer; background: var(--surface-2); }
+.sys input { position: absolute; opacity: 0; }
+.sys b { font-family: var(--font-display); font-size: 16px; }
+.sys small { color: var(--muted); font-size: 13px; line-height: 1.45; }
+.sys label:has(input:checked) { border-color: var(--sun); box-shadow: inset 0 0 0 1px var(--sun); background: var(--surface); }
+.sys label:has(input:checked) b::after { content: " ✓"; color: var(--sun-ink); }
+.sys label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+.opt[hidden] { display: none; }
+.rangef { display: grid; gap: 6px; }
+.rangef .rhead { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.rangef input { width: 100%; accent-color: var(--ink); margin: 0; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.check input { margin-top: 4px; width: 16px; height: 16px; accent-color: var(--ink); }
+
+.pgroups { display: grid; gap: 18px; }
+.pgroup h3 { margin: 0 0 10px; font-size: 15px; font-weight: 600; color: var(--muted); }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.pfield { display: grid; gap: 4px; align-content: start; }
+.pfield label { font-size: 13px; font-weight: 500; }
+.pfield small { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.adv-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+
+/* results */
+.results { position: sticky; top: 14px; max-height: calc(100dvh - 28px); overflow: auto; display: grid; gap: 14px; min-width: 0; padding-bottom: 2px; scrollbar-width: thin; }
+.plate {
+  background: var(--plate-bg);
+  color: var(--plate-ink);
+  border-radius: 12px;
+  padding: 18px 20px 16px;
+  position: relative;
+  border: 1px solid var(--plate-line);
+}
+.plate::before, .plate::after {
+  content: ""; position: absolute; top: 12px; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--plate-line); box-shadow: 0 0 0 1px rgba(255,255,255,.08);
+}
+.plate::before { left: 10px; }
+.plate::after { right: 10px; }
+.plate-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 0 8px; }
+.plate-head span:first-child { font-family: var(--font-display); letter-spacing: .12em; text-transform: uppercase; font-size: 12px; color: var(--plate-muted); }
+.pill { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 10px; background: var(--sun); color: #1c1300; font-family: var(--font-display); letter-spacing: .04em; }
+.plate-main { display: flex; align-items: baseline; gap: 10px; padding: 6px 8px 12px; border-bottom: 1px dashed var(--plate-line); }
+.plate-main .big { font-family: var(--font-display); font-weight: 700; font-size: clamp(54px, 7vw, 76px); line-height: 1; color: var(--sun); letter-spacing: -.01em; }
+.plate-main .unit { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: var(--plate-ink); }
+.plate-main .sub { margin-left: auto; text-align: right; font-size: 12.5px; color: var(--plate-muted); line-height: 1.4; }
+.plate dl { margin: 0; display: grid; }
+.plate dl > div { display: grid; grid-template-columns: 112px 1fr; gap: 10px; padding: 9px 8px; border-bottom: 1px solid var(--plate-line); }
+.plate dl > div:last-child { border-bottom: 0; }
+.plate dt { color: var(--plate-muted); font-size: 13px; }
+.plate dd { margin: 0; font-size: 14px; }
+.plate dd b { font-family: var(--font-display); font-size: 18px; font-weight: 600; margin-right: 4px; }
+.plate dd small { color: var(--plate-muted); font-size: 12.5px; display: block; }
+
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; }
+.tile span { font-size: 12.5px; color: var(--muted); }
+.tile b { font-family: var(--font-display); font-size: 22px; font-weight: 600; line-height: 1.2; }
+.tile small { font-size: 12px; color: var(--muted); }
+.tile.hl { border-color: var(--sun); box-shadow: inset 3px 0 0 var(--sun); }
+.tile.hl b { color: var(--ink); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; }
+.card h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.card .hint { margin-top: -6px; }
+
+/* energy flow chart */
+.flow { display: grid; gap: 10px; position: relative; }
+.flow-row { display: grid; grid-template-columns: 74px 1fr; gap: 10px; align-items: center; }
+.flow-row > span { font-size: 13px; color: var(--muted); }
+.flow-track { position: relative; height: 26px; }
+.flow-grid { position: absolute; inset: 0; pointer-events: none; }
+.flow-grid i { position: absolute; top: -4px; bottom: -4px; width: 1px; background: var(--line); }
+.flow-bar { position: relative; display: flex; gap: 2px; height: 100%; }
+.flow-bar div { height: 100%; min-width: 0; cursor: default; }
+.flow-bar div:first-child { border-radius: 4px 0 0 4px; }
+.flow-bar div:last-child { border-radius: 0 4px 4px 0; }
+.flow-bar div:only-child { border-radius: 4px; }
+.flow-bar div:hover { filter: brightness(1.1); }
+.seg-s1 { background: var(--s1); }
+.seg-s2 { background: var(--s2); }
+.seg-s3 { background: var(--s3); }
+.seg-off { background: repeating-linear-gradient(45deg, var(--s-off) 0 4px, transparent 4px 7px); box-shadow: inset 0 0 0 1px var(--s-off); }
+.flow-axis { display: grid; grid-template-columns: 74px 1fr; gap: 10px; }
+.flow-axis div { position: relative; height: 16px; font-size: 11.5px; color: var(--muted); }
+.flow-axis em { position: absolute; font-style: normal; transform: translateX(-50%); white-space: nowrap; }
+.flow-axis em:first-child { transform: none; }
+.tip { position: absolute; z-index: 5; pointer-events: none; background: var(--ink); color: var(--surface); font-size: 12.5px; padding: 6px 9px; border-radius: 6px; white-space: nowrap; transform: translate(-50%, -100%); margin-top: -8px; }
+.tip[hidden] { display: none; }
+.legend-table { font-size: 13px; }
+.legend-table th, .legend-table td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: right; }
+.legend-table th:first-child, .legend-table td:first-child { text-align: left; }
+.legend-table thead th { color: var(--muted); font-weight: 500; font-size: 12px; }
+.legend-table tbody tr:last-child td { border-bottom: 0; }
+.sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 7px; vertical-align: -1px; }
+
+.notes { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.notes li { font-size: 13.5px; padding: 8px 10px 8px 12px; border-radius: 8px; border-left: 4px solid; }
+.notes li b { font-weight: 600; margin-right: 4px; }
+.n-info { background: var(--info-bg); border-color: var(--info-line) !important; }
+.n-warn { background: var(--warn-bg); border-color: var(--warn-line) !important; }
+.n-crit { background: var(--crit-bg); border-color: var(--crit-line) !important; }
+
+.steps-table { font-size: 13px; }
+.steps-table td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.steps-table tr:last-child td { border-bottom: 0; }
+.steps-table td:first-child { color: var(--muted); width: 32%; }
+.steps-table td:last-child b { font-weight: 600; }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.status { font-size: 13px; color: var(--good); }
+.copybox { width: 100%; min-height: 160px; font: 13px/1.5 var(--font-body); padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); }
+.copybox[hidden] { display: none; }
+.foot { font-size: 12.5px; color: var(--muted); display: grid; gap: 4px; }
+.foot p { margin: 0; }
+.foot a { color: inherit; }
+
+/* company band */
+.brandbar { background: var(--plate-bg); color: var(--plate-ink); border-bottom: 3px solid var(--sun); }
+.brandbar-in {
+  max-width: 1240px; margin: 0 auto; padding: 14px 20px;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px 24px; align-items: center;
+}
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brand-mark { width: 42px; height: 42px; flex: none; }
+.brand-name { display: grid; line-height: 1.3; }
+.brand-name b { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.brand-name span { font-size: 12px; color: var(--plate-muted); letter-spacing: .02em; }
+.promo { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--plate-ink); border-left: 2px solid var(--plate-line); padding-left: 18px; max-width: 46ch; }
+.contact { display: grid; gap: 4px; justify-items: end; text-align: right; font-size: 12.5px; color: var(--plate-muted); }
+.contact-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.tel { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--sun); text-decoration: none; white-space: nowrap; }
+.tel:hover { text-decoration: underline; }
+.chip-btn.on-dark { background: transparent; color: var(--plate-ink); border-color: var(--plate-line); font-size: 12px; padding: 3px 9px; }
+.chip-btn.on-dark:hover { border-color: var(--plate-ink); }
+@media (max-width: 900px) {
+  .brandbar-in { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .promo { border-left: 0; padding-left: 0; max-width: none; }
+  .contact { justify-items: start; text-align: left; }
+  .contact-row { justify-content: flex-start; }
+}
+@media (max-width: 420px) { .brandbar-in { padding: 12px 16px; } }
+
+.top-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.share-jump { font-size: 13px; font-weight: 600; color: var(--ink); text-decoration: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; }
+.share-jump:hover { border-color: var(--ink); }
+a.btn { display: inline-flex; align-items: center; text-decoration: none; }
+.btn.line { background: #06c755; border-color: #06c755; color: #04230f; }
+.chip-btn { font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); cursor: pointer; color: var(--ink); }
+.chip-btn:hover { border-color: var(--ink); }
+.chip-btn b { font-weight: 600; }
+
+/* goal progress */
+.goal { display: grid; gap: 8px; }
+.goal-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 13.5px; color: var(--muted); }
+.goal-head b { font-family: var(--font-display); font-size: 20px; color: var(--ink); }
+.goal-track { position: relative; height: 22px; background: var(--surface-2); border-radius: 4px; margin-bottom: 18px; }
+.goal-bar { display: flex; gap: 2px; height: 100%; }
+.goal-bar div { height: 100%; }
+.goal-bar div:first-child { border-radius: 4px 0 0 4px; }
+.goal-bar div:last-child { border-radius: 0 4px 4px 0; }
+.goal-bar div:only-child { border-radius: 4px; }
+.goal-mark { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); }
+.goal-mark span { position: absolute; top: 100%; margin-top: 3px; font-size: 11.5px; color: var(--ink); white-space: nowrap; transform: translateX(-50%); }
+.goal-mark.edge-r span { transform: translateX(-100%); }
+.goal-mark.edge-l span { transform: none; }
+.stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.stages li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 13.5px; }
+.stages li.off { opacity: .6; }
+.stages .sn { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; color: #fff; }
+.stages li b.t { display: block; font-family: var(--font-display); font-size: 15px; font-weight: 600; }
+.stages .ok { color: var(--good); font-weight: 600; }
+
+/* share */
+.share-app { display: grid; grid-template-columns: 132px 1fr; gap: 14px; align-items: center; }
+.qr-box { background: #fff; border-radius: 8px; padding: 6px; border: 1px solid var(--line); line-height: 0; }
+.qr-box svg { width: 100%; height: auto; display: block; }
+.share-body { display: grid; gap: 8px; min-width: 0; }
+.linkbox { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); padding: 8px 10px; font-size: 13px; color: var(--ink); }
+.share-result { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+@media (max-width: 420px) { .share-app { grid-template-columns: 1fr; } .qr-box { width: 160px; } }
+
+.mini { display: none; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .results { position: static; max-height: none; overflow: visible; }
+  .mini {
+    display: flex; position: fixed; left: 10px; right: 10px; bottom: 10px; z-index: 20;
+    background: var(--plate-bg); color: var(--plate-ink); border-radius: 12px; padding: 10px 14px;
+    align-items: center; gap: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.25); font-size: 13.5px;
+  }
+  .mini b { font-family: var(--font-display); color: var(--sun); font-size: 18px; }
+  .mini a { margin-left: auto; color: var(--plate-ink); font-weight: 600; white-space: nowrap; }
+  body { padding-bottom: 76px; }
+}
+@media (max-width: 420px) {
+  .top, .layout { padding-left: 16px; padding-right: 16px; }
+  .plate dl > div { grid-template-columns: 92px 1fr; }
+  .tiles { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .tile b { font-size: 19px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="brandbar">
+  <div class="brandbar-in">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="15" r="6.5" fill="var(--sun)"/>
+        <g stroke="var(--sun)" stroke-width="2.4" stroke-linecap="round">
+          <path d="M20 3.5v3M8.5 15h3M28.5 15h3M11.9 6.9l2.1 2.1M28.1 6.9 26 9"/>
+        </g>
+        <path d="M5 36 10 25h20l5 11z" fill="#3987e5"/>
+        <path d="M15.6 25l-1.6 11M24.4 25l1.6 11M7.5 30.5h25" stroke="#0f1d2b" stroke-width="1.4"/>
+      </svg>
+      <div class="brand-name">
+        <b>บริษัท บลู ซิสเต็ม เทคโนโลยี จำกัด</b>
+        <span>Blue System Technology Co., Ltd.</span>
+      </div>
+    </div>
+    <p class="promo">ติดตั้งโซลาร์เซลล์อย่างปลอดภัย โดยทีมวิศวกร ตั้งแต่สำรวจหน้างาน ออกแบบ จนติดตั้งเสร็จ</p>
+    <div class="contact">
+      <span>สอบถาม / นัดสำรวจหน้างาน คุณพลพัฒน์ พรหมสุวรรณ</span>
+      <span class="contact-row">
+        <a class="tel" href="tel:0869981200">โทร 086-998-1200</a>
+        <button type="button" class="chip-btn on-dark" id="copyPhone">คัดลอกเบอร์</button>
+      </span>
+    </div>
+  </div>
+</div>
+<header class="top">
+  <div class="top-row"><div class="eyebrow">Solar sizing · ประเทศไทย</div><a class="share-jump" href="#share">แชร์แอปนี้</a></div>
+  <h1>คำนวณขนาดระบบโซลาร์</h1>
+  <p>กรอกค่าไฟ สัดส่วนการใช้ไฟกลางวัน/กลางคืน และเครื่องใช้ไฟฟ้า แล้วระบบจะเสนอขนาดแผง อินเวอร์เตอร์ แบตเตอรี่ พร้อมค่าไฟหลังติดตั้งและระยะคืนทุนโดยประมาณ ตัวเลขด้านล่างเป็นตัวอย่างบ้านที่ใช้ไฟประมาณ 520 หน่วยต่อเดือนและตั้งเป้าประหยัด 1,500 บาท</p>
+</header>
+
+<main class="layout">
+  <section class="inputs" aria-label="ข้อมูลสำหรับคำนวณ">
+
+    <fieldset class="step" id="step-usage">
+      <legend><span class="stepno">1</span>การใช้ไฟฟ้า</legend>
+      <div class="stack">
+        <div class="seg" role="radiogroup" aria-label="คำนวณจาก">
+          <label><input type="radio" name="inputMode" id="mode-bill" value="bill"><span>ค่าไฟ (บาท/เดือน)</span></label>
+          <label><input type="radio" name="inputMode" id="mode-kwh" value="kwh"><span>หน่วยไฟ (kWh/เดือน)</span></label>
+          <label><input type="radio" name="inputMode" id="mode-appliance" value="appliance"><span>จากรายการเครื่องใช้ไฟฟ้า</span></label>
+        </div>
+
+        <div class="row2">
+          <div class="field" id="f-bill">
+            <label for="bill">ค่าไฟเฉลี่ยต่อเดือน</label>
+            <div class="input-unit big"><input id="bill" type="number" inputmode="decimal" min="0" step="10"><span>บาท</span></div>
+          </div>
+          <div class="field" id="f-kwh" hidden>
+            <label for="kwhMonth">หน่วยไฟเฉลี่ยต่อเดือน</label>
+            <div class="input-unit big"><input id="kwhMonth" type="number" inputmode="decimal" min="0" step="1"><span>kWh</span></div>
+          </div>
+          <div class="field" id="f-appnote" hidden>
+            <span class="field-label">หน่วยไฟจากรายการเครื่องใช้</span>
+            <div class="input-unit big"><input id="appMonthly" type="text" readonly aria-label="หน่วยไฟต่อเดือนจากรายการเครื่องใช้"><span>kWh/เดือน</span></div>
+          </div>
+          <div class="field">
+            <label for="tariffMode">อัตราค่าไฟ</label>
+            <select id="tariffMode" class="plain">
+              <option value="residential">บ้านอยู่อาศัย (อัตราก้าวหน้า)</option>
+              <option value="flat">อัตราคงที่ต่อหน่วย</option>
+            </select>
+          </div>
+        </div>
+        <p class="hint" id="kwhDerived"></p>
+
+        <div class="dn">
+          <div class="dn-head">
+            <label class="field-label" for="dayPct">สัดส่วนการใช้ไฟ กลางวัน / กลางคืน</label>
+            <button type="button" class="linkbtn" id="useAppSplit"></button>
+          </div>
+          <div class="dn-bar" aria-hidden="true"><div class="dn-day" id="dnDay"></div><div class="dn-night" id="dnNight"></div></div>
+          <input type="range" id="dayPct" min="0" max="100" step="1">
+          <p class="hint">กลางวัน = ช่วงที่มีแดด ประมาณ 06:00–18:00 น. บ้านที่ไม่มีคนอยู่ตอนกลางวันมักใช้กลางวันเพียง 30–40%</p>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="step" id="step-appliances">
+      <legend><span class="stepno">2</span>เครื่องใช้ไฟฟ้า</legend>
+      <div class="stack">
+        <p class="hint">ใช้หาโหลดสูงสุดเพื่อเลือกอินเวอร์เตอร์ และตรวจทานกับค่าไฟ ชั่วโมงคือเวลาที่เครื่องกินไฟจริง สำหรับแอร์และตู้เย็นให้นับเฉพาะเวลาคอมเพรสเซอร์ทำงาน ค่าวัตต์ตั้งต้นเป็นค่าทั่วไป ควรแก้ตามป้ายสเปกของเครื่องจริง</p>
+        <div class="table-wrap">
+          <table class="app-table">
+            <thead><tr>
+              <th class="c-name">เครื่องใช้</th><th class="c-w">วัตต์</th><th class="c-q">จำนวน</th>
+              <th class="c-h">ชม. กลางวัน</th><th class="c-h">ชม. กลางคืน</th><th class="c-k">kWh/วัน</th><th class="c-x"><span class="sr" style="position:absolute;left:-9999px">ลบ</span></th>
+            </tr></thead>
+            <tbody id="appBody"></tbody>
+          </table>
+        </div>
+        <div class="add-row">
+          <select id="preset" class="plain" aria-label="เลือกเครื่องใช้ไฟฟ้าที่จะเพิ่ม"></select>
+          <button type="button" class="btn" id="addApp">เพิ่มรายการ</button>
+        </div>
+        <div class="chips" id="appChips"></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="step" id="step-system">
+      <legend><span class="stepno">3</span>ขนาดระบบ</legend>
+      <div class="stack">
+        <div class="seg" role="radiogroup" aria-label="กำหนดขนาดระบบจาก">
+          <label><input type="radio" name="sizing" value="target"><span>ตามเป้าหมายประหยัดค่าไฟ</span></label>
+          <label><input type="radio" name="sizing" value="type"><span>เลือกประเภทระบบเอง</span></label>
+        </div>
+
+        <div class="stack" id="sz-target">
+          <div class="field">
+            <label for="targetSaving">อยากประหยัดค่าไฟเดือนละ</label>
+            <div class="input-unit big"><input id="targetSaving" type="number" inputmode="decimal" min="0" step="100"><span>บาท</span></div>
+          </div>
+          <div class="chips" id="targetPicks"></div>
+          <p class="hint">คิดแบบ On-grid ก่อน คือใช้ไฟจากแผงตอนกลางวันโดยไม่มีแบตเตอรี่ ถ้ายังไม่ถึงเป้าจึงเพิ่มแบตเตอรี่ทีละก้อน (พร้อมแผงที่ต้องใช้ชาร์จ) เพื่อลดค่าไฟกลางคืนจนถึงเป้า</p>
+        </div>
+
+        <div class="stack" id="sz-type">
+        <div class="sys" role="radiogroup" aria-label="ประเภทระบบ">
+          <label><input type="radio" name="sysType" value="ongrid"><b>On-grid</b><small>ไม่มีแบตเตอรี่ ใช้ไฟจากแผงตอนกลางวัน กลางคืนซื้อจากการไฟฟ้า ราคาถูกที่สุด</small></label>
+          <label><input type="radio" name="sysType" value="hybrid"><b>Hybrid</b><small>มีแบตเตอรี่เก็บไฟไว้ใช้กลางคืน ยังต่อกับการไฟฟ้า มีไฟสำรองตอนไฟดับ</small></label>
+          <label><input type="radio" name="sysType" value="offgrid"><b>Off-grid</b><small>ไม่ต่อการไฟฟ้า แผงและแบตต้องรับภาระทั้งหมด เผื่อวันฝนตก</small></label>
+        </div>
+
+        <div class="opt rangef" id="opt-ongrid">
+          <div class="rhead"><label for="dayCover">ขนาดแผงเทียบกับไฟที่ใช้กลางวัน</label><b class="tnum" id="dayCoverOut"></b></div>
+          <input type="range" id="dayCover" min="30" max="150" step="5">
+          <p class="hint">100% = แผงผลิตไฟเฉลี่ยพอดีกับไฟที่ใช้ตอนกลางวัน เกิน 100% จะเหลือไฟขายคืนหรือทิ้ง</p>
+        </div>
+        <div class="opt rangef" id="opt-hybrid">
+          <div class="rhead"><label for="nightCover">ให้แบตเตอรี่จ่ายไฟกลางคืน</label><b class="tnum" id="nightCoverOut"></b></div>
+          <input type="range" id="nightCover" min="0" max="100" step="5">
+          <p class="hint">ส่วนที่แบตไม่ได้จ่ายจะซื้อจากการไฟฟ้าตามปกติ ลดค่านี้เพื่อลดงบแบตเตอรี่</p>
+        </div>
+        <div class="opt row2" id="opt-offgrid">
+          <div class="field">
+            <label for="autonomyDays">สำรองไฟเพิ่มสำหรับวันไม่มีแดด</label>
+            <div class="input-unit"><input id="autonomyDays" type="number" min="0" max="5" step="0.5"><span>วัน</span></div>
+          </div>
+          <div class="field">
+            <label for="rainyFactor">แดดช่วงหน้าฝนเทียบค่าเฉลี่ย</label>
+            <div class="input-unit"><input id="rainyFactor" type="number" min="40" max="100" step="5"><span>%</span></div>
+          </div>
+        </div>
+        </div>
+        <div class="opt stack" id="opt-export">
+          <label class="check"><input type="checkbox" id="exportOn"><span>ขายไฟส่วนเกินคืนการไฟฟ้า (โครงการโซลาร์ภาคประชาชน รับซื้อไม่เกิน 5 kW ต่อมิเตอร์)</span></label>
+          <div class="field" style="max-width:260px">
+            <label for="p-exportPrice">ราคารับซื้อไฟส่วนเกิน</label>
+            <div class="input-unit"><input id="p-exportPrice" data-param="exportPrice" type="number" min="0" step="0.01"><span>บาท/หน่วย</span></div>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <details class="step" id="step-advanced">
+      <summary><span class="stepno">4</span>ค่าตั้งต้นทางเทคนิคและราคา</summary>
+      <div class="pgroups" id="paramGroups"></div>
+      <div class="adv-actions">
+        <button type="button" class="btn ghost" id="resetAll">คืนค่าตั้งต้นทั้งหมด</button>
+      </div>
+    </details>
+  </section>
+
+  <aside class="results" id="results" aria-live="polite" aria-label="ผลการคำนวณ">
+    <div class="plate">
+      <div class="plate-head"><span>ระบบที่แนะนำ</span><span class="pill" id="r-type"></span></div>
+      <div class="plate-main">
+        <span class="big num" id="r-kwp">–</span><span class="unit">kWp</span>
+        <span class="sub" id="r-kwp-sub"></span>
+      </div>
+      <dl>
+        <div><dt>แผงโซลาร์</dt><dd id="r-panels"></dd></div>
+        <div><dt>อินเวอร์เตอร์</dt><dd id="r-inv"></dd></div>
+        <div><dt>แบตเตอรี่</dt><dd id="r-batt"></dd></div>
+        <div><dt>พื้นที่หลังคา</dt><dd id="r-roof"></dd></div>
+        <div><dt>ผลิตไฟเฉลี่ย</dt><dd id="r-prod"></dd></div>
+      </dl>
+    </div>
+
+    <div class="tiles">
+      <div class="tile"><span>ค่าไฟตอนนี้</span><b id="t-before">–</b><small>บาท/เดือน</small></div>
+      <div class="tile"><span>ค่าไฟหลังติดตั้ง</span><b id="t-after">–</b><small id="t-after-sub">บาท/เดือน</small></div>
+      <div class="tile hl"><span>ประหยัดได้</span><b id="t-save">–</b><small id="t-save-sub">บาท/เดือน</small></div>
+      <div class="tile"><span>พึ่งตัวเองได้</span><b id="t-self">–</b><small>ของไฟที่ใช้ต่อวัน</small></div>
+      <div class="tile"><span>งบประมาณโดยประมาณ</span><b id="t-cost">–</b><small id="t-cost-sub">บาท</small></div>
+      <div class="tile hl"><span>คืนทุน</span><b id="t-payback">–</b><small>ปี (ไม่คิดค่าเสื่อม)</small></div>
+    </div>
+
+    <div class="card" id="planCard">
+      <h2>แผนตามเป้าหมายประหยัด</h2>
+      <div class="goal">
+        <div class="goal-head"><span id="goalLabel"></span><b class="tnum" id="goalTotal"></b></div>
+        <div class="goal-track" id="goalTrack"><div class="goal-bar" id="goalBar"></div><div class="goal-mark" id="goalMark"><span id="goalMarkLabel"></span></div></div>
+      </div>
+      <ol class="stages" id="stages"></ol>
+      <div class="table-wrap" style="border:0" id="optWrap">
+        <table class="legend-table">
+          <thead><tr><th>ทางเลือก</th><th>ประหยัด/เดือน</th><th>งบประมาณ</th><th>คืนทุน</th></tr></thead>
+          <tbody id="optBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>ไฟต่อวันมาจากไหน และไฟจากแผงไปไหน</h2>
+      <p class="hint">วันที่มีแดดเฉลี่ย หน่วย kWh/วัน วางเมาส์บนแถบเพื่อดูตัวเลข</p>
+      <div class="flow" id="flow">
+        <div class="flow-row"><span>การใช้ไฟ</span><div class="flow-track"><div class="flow-grid" id="gridA"></div><div class="flow-bar" id="barUse"></div></div></div>
+        <div class="flow-row"><span>ไฟจากแผง</span><div class="flow-track"><div class="flow-grid" id="gridB"></div><div class="flow-bar" id="barPv"></div></div></div>
+        <div class="flow-axis"><span></span><div id="axis"></div></div>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+      <div class="table-wrap" style="border:0">
+        <table class="legend-table">
+          <thead><tr><th>แหล่ง / ปลายทาง</th><th>การใช้ไฟ</th><th>ไฟจากแผง</th></tr></thead>
+          <tbody id="legendBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>ข้อควรตรวจสอบ</h2>
+      <ul class="notes" id="notes"></ul>
+    </div>
+
+    <div class="card">
+      <h2>วิธีคำนวณ</h2>
+      <table class="steps-table"><tbody id="stepsBody"></tbody></table>
+    </div>
+
+    <div class="card" id="share">
+      <h2>แชร์</h2>
+      <div class="share-app" id="shareApp">
+        <div class="qr-box" id="qrBox"></div>
+        <div class="share-body">
+          <span class="field-label">ลิงก์แอปนี้ สแกน QR หรือส่งต่อได้เลย</span>
+          <input class="linkbox" id="appLink" type="text" readonly aria-label="ลิงก์แอปคำนวณโซลาร์">
+          <div class="actions">
+            <button type="button" class="btn" id="copyLink">คัดลอกลิงก์</button>
+            <a class="btn line" id="lineApp" target="_blank" rel="noopener">ส่งลิงก์ทาง LINE</a>
+          </div>
+        </div>
+      </div>
+      <p class="hint" id="shareLocalNote" hidden>เปิดไฟล์นี้จากเว็บไซต์ (เช่น GitHub Pages หรือเว็บบริษัท) แล้วลิงก์และ QR สำหรับแชร์จะแสดงที่นี่</p>
+      <div class="share-result">
+        <span class="field-label">ส่งผลคำนวณนี้ให้ลูกค้าหรือทีม</span>
+        <div class="actions">
+          <button type="button" class="btn ghost" id="copySummary">คัดลอกสรุปผล</button>
+          <a class="btn ghost" id="lineResult" target="_blank" rel="noopener">ส่งผลทาง LINE</a>
+        </div>
+        <p class="hint">ปุ่มส่งผลทาง LINE เปิดหน้าเลือกแชตในแอป LINE บนมือถือ บนคอมพิวเตอร์ให้ใช้ปุ่มคัดลอกแทน</p>
+      </div>
+      <span class="status" id="copyStatus" role="status"></span>
+      <textarea class="copybox" id="copyBox" hidden readonly aria-label="ข้อความสำหรับคัดลอก"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="foot">
+        <p>อ้างอิง: อัตราค่าไฟบ้านอยู่อาศัยโครงสร้างใหม่ตั้งแต่บิล ก.ย. 2569 (1–200 หน่วย 3.0000 / 201–400 หน่วย 4.1584 / 401+ หน่วย 4.3583 บาท ไม่รวม Ft และ VAT), ค่า Ft งวด ก.ย.–ธ.ค. 2569 = 16.23 สต./หน่วย (กกพ.), รับซื้อไฟส่วนเกินโซลาร์ภาคประชาชน 2.20 บาท/หน่วย ไม่เกิน 5 kW ต่อมิเตอร์, ความเข้มรังสีอาทิตย์เฉลี่ยทั้งประเทศ 18.2 MJ/m²·วัน (สนพ.), แผงตั้งต้น 620 W ขนาด 2382×1134 มม. 33.4 กก. (Jinko Tiger Neo JKM620N-66HL4M-BDV)</p>
+        <p><b>บริษัท บลู ซิสเต็ม เทคโนโลยี จำกัด</b> รับออกแบบและติดตั้งโซลาร์เซลล์ ติดต่อคุณพลพัฒน์ พรหมสุวรรณ โทร 086-998-1200</p>
+        <p>ผลนี้เป็นการประมาณการเบื้องต้นจากพลังงานเฉลี่ยรายวัน ก่อนเสนอราคาจริงควรสำรวจหน้างาน ทิศและเงาบนหลังคา โครงสร้าง ขนาดมิเตอร์ และเลือกสตริงให้เข้ากับช่วง MPPT ของอินเวอร์เตอร์ ค่าที่แก้ในข้อ 4 จะจำไว้ในเบราว์เซอร์นี้</p>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="mini" id="mini" aria-hidden="true"></div>
+
+<script>/* qrcode-generator 1.4.4, Copyright (c) 2009 Kazuhiko Arase, MIT license */
+// Copyright (c) 2009 Kazuhiko Arase
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1})},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(n*r,o*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});
+</script>
+<script id="solar-calc">
+/* Pure calculation engine. No DOM access, so it can be unit-tested in Node. */
+const SolarCalc = (() => {
+  const DAYS_PER_MONTH = 365 / 12;
+  const INVERTER_SIZES_KW = [3, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 60, 80, 100];
+  const EPS = 1e-9;
+
+  function n(v) { const x = Number(v); return Number.isFinite(x) ? x : 0; }
+
+  function energyCharge(kwh, blocks) {
+    let rest = Math.max(0, n(kwh)), prev = 0, sum = 0;
+    for (const b of blocks) {
+      const size = b.upTo - prev;
+      const used = Math.min(rest, size);
+      sum += used * b.rate;
+      rest -= used;
+      prev = b.upTo;
+      if (rest <= 0) break;
+    }
+    return sum;
+  }
+
+  function billFromKwh(kwh, t) {
+    kwh = Math.max(0, n(kwh));
+    if (t.mode === 'flat') return kwh * n(t.flatRate);
+    return (energyCharge(kwh, t.blocks) + n(t.service) + n(t.ft) * kwh) * (1 + n(t.vat));
+  }
+
+  function kwhFromBill(bill, t) {
+    bill = Math.max(0, n(bill));
+    if (t.mode === 'flat') return n(t.flatRate) > 0 ? bill / n(t.flatRate) : 0;
+    if (bill <= billFromKwh(0, t)) return 0;
+    let lo = 0, hi = 100;
+    while (billFromKwh(hi, t) < bill && hi < 1e9) hi *= 2;
+    for (let i = 0; i < 200; i++) {
+      const mid = (lo + hi) / 2;
+      if (billFromKwh(mid, t) < bill) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  function applianceSummary(list) {
+    let dayKwh = 0, nightKwh = 0, peakW = 0;
+    for (const a of (list || [])) {
+      const p = Math.max(0, n(a.w)) * Math.max(0, n(a.qty));
+      dayKwh += p * Math.min(12, Math.max(0, n(a.hDay))) / 1000;
+      nightKwh += p * Math.min(12, Math.max(0, n(a.hNight))) / 1000;
+      peakW += p;
+    }
+    const totalKwh = dayKwh + nightKwh;
+    return {
+      dayKwh, nightKwh, totalKwh, peakW,
+      monthlyKwh: totalKwh * DAYS_PER_MONTH,
+      dayPct: totalKwh > 0 ? dayKwh / totalKwh * 100 : null
+    };
+  }
+
+  function pickInverter(kw) {
+    if (!(kw > 0)) return 0;
+    for (const s of INVERTER_SIZES_KW) if (s >= kw - EPS) return s;
+    return Math.ceil(kw / 10) * 10;
+  }
+
+  /* Monthly use and its day/night split, from the bill, kWh or appliance list. */
+  function baseLoad(inp) {
+    const app = applianceSummary(inp.appliances);
+    let monthlyKwh, dayPct;
+    if (inp.inputMode === 'appliance') {
+      monthlyKwh = app.monthlyKwh;
+      dayPct = app.dayPct === null ? n(inp.dayPct) : app.dayPct;
+    } else if (inp.inputMode === 'kwh') {
+      monthlyKwh = n(inp.kwhMonth);
+      dayPct = n(inp.dayPct);
+    } else {
+      monthlyKwh = kwhFromBill(inp.bill, inp.tariff);
+      dayPct = n(inp.dayPct);
+    }
+    monthlyKwh = Math.max(0, monthlyKwh);
+    dayPct = Math.min(100, Math.max(0, dayPct));
+    const dailyKwh = monthlyKwh / DAYS_PER_MONTH;
+    const dayKwh = dailyKwh * dayPct / 100;
+    return { app, monthlyKwh, dailyKwh, dayPct, dayKwh, nightKwh: dailyKwh - dayKwh };
+  }
+
+  /* Energy balance, bills and cost for a given number of panels and battery modules. */
+  function evaluate(inp, L, panels, battModules, type) {
+    const p = inp.p, t = inp.tariff;
+    const yieldPerKwp = n(p.psh) * n(p.pr);
+    const eff = n(p.battEff) > 0 ? n(p.battEff) : 1;
+    const dod = n(p.dod) > 0 ? n(p.dod) : 1;
+
+    const kwp = panels * n(p.panelW) / 1000;
+    const battNominal = battModules * n(p.battModuleKwh);
+    const battUsable = battNominal * dod;
+    const battAh = n(p.battV) > 0 ? battNominal * 1000 / n(p.battV) : 0;
+
+    const invByPv = n(p.dcAc) > 0 ? kwp / n(p.dcAc) : kwp;
+    const invByLoad = (type !== 'ongrid' && L.app.peakW > 0 && panels > 0) ? L.app.peakW * n(p.simultaneity) * n(p.loadMargin) / 1000 : 0;
+    const invReq = Math.max(invByPv, invByLoad);
+    const invKw = pickInverter(invReq);
+
+    const pvDaily = kwp * yieldPerKwp;
+    const direct = Math.min(pvDaily, L.dayKwh);
+    let surplus = pvDaily - direct;
+    let fromBatt = 0, chargeUsed = 0;
+    if (type !== 'ongrid' && battUsable > 0) {
+      fromBatt = Math.min(surplus * eff, battUsable, L.nightKwh);
+      chargeUsed = fromBatt / eff;
+      surplus -= chargeUsed;
+    }
+    surplus = Math.max(0, surplus);
+    const exported = (inp.exportOn && type !== 'offgrid') ? surplus : 0;
+    const curtailed = surplus - exported;
+    const remaining = Math.max(0, L.dailyKwh - direct - fromBatt);
+    const gridDaily = type === 'offgrid' ? 0 : remaining;
+    const unmetDaily = type === 'offgrid' ? remaining : 0;
+    const selfSufficiency = L.dailyKwh > 0 ? (direct + fromBatt) / L.dailyKwh : 0;
+
+    const billBefore = billFromKwh(L.monthlyKwh, t);
+    const gridMonthly = gridDaily * DAYS_PER_MONTH;
+    const billAfter = type === 'offgrid' ? 0 : billFromKwh(gridMonthly, t);
+    const exportIncome = exported * DAYS_PER_MONTH * n(inp.exportPrice);
+    const savingMonthly = billBefore - billAfter + exportIncome;
+
+    const cost = {
+      pv: kwp * n(p.costPvPerKwp),
+      inv: invKw * (type === 'ongrid' ? n(p.costInvOngrid) : n(p.costInvHybrid)),
+      batt: battNominal * n(p.costBattPerKwh),
+      fixed: panels > 0 ? n(p.costFixed) : 0
+    };
+    cost.total = cost.pv + cost.inv + cost.batt + cost.fixed;
+    const paybackYears = savingMonthly > 0 && cost.total > 0 ? cost.total / (savingMonthly * 12) : null;
+
+    return {
+      panels, kwp, battModules, battNominal, battUsable, battAh,
+      invByPv, invByLoad, invReq, invKw, yieldPerKwp,
+      pvDaily, pvMonthly: pvDaily * DAYS_PER_MONTH, pvYearly: pvDaily * 365,
+      direct, fromBatt, chargeUsed, exported, curtailed, gridDaily, unmetDaily, gridMonthly, selfSufficiency,
+      billBefore, billAfter, exportIncome, savingMonthly, cost, paybackYears,
+      roofArea: panels * n(p.panelL) * n(p.panelWd) / 1e6 * n(p.areaFactor),
+      panelWeight: panels * n(p.panelKg)
+    };
+  }
+
+  function panelsForKwh(kwhPerDay, p) {
+    const y = n(p.psh) * n(p.pr);
+    if (!(kwhPerDay > EPS) || !(y > 0) || !(n(p.panelW) > 0)) return 0;
+    return Math.ceil(kwhPerDay / y * 1000 / n(p.panelW) - EPS);
+  }
+
+  /* Target-saving plan: step 1 grows an on-grid array one panel at a time (daytime use only).
+     If the target is still not met when daytime use is fully covered, step 2 adds battery
+     modules one at a time, with the extra panels needed to charge them, until it is met. */
+  function planForTarget(inp, L) {
+    const p = inp.p;
+    const target = n(inp.targetSaving);
+    const eff = n(p.battEff) > 0 ? n(p.battEff) : 1;
+    const dod = n(p.dod) > 0 ? n(p.dod) : 1;
+    const moduleKwh = n(p.battModuleKwh);
+
+    const nDay = panelsForKwh(L.dayKwh, p);
+    const ongridMax = evaluate(inp, L, nDay, 0, 'ongrid');
+    const maxModules = (moduleKwh > 0 && L.nightKwh > EPS) ? Math.ceil(L.nightKwh / (dod * moduleKwh) - EPS) : 0;
+    const panelsWithBatt = (m) => Math.max(nDay, panelsForKwh(L.dayKwh + Math.min(m * moduleKwh * dod, L.nightKwh) / eff, p));
+    const fullPanels = maxModules > 0 ? panelsWithBatt(maxModules) : nDay;
+    const fullSystem = maxModules > 0 ? evaluate(inp, L, fullPanels, maxModules, 'hybrid') : ongridMax;
+
+    const plan = {
+      target, nDay, maxModules,
+      ongridMaxPanels: nDay, ongridMaxSaving: ongridMax.savingMonthly, ongridMaxCost: ongridMax.cost.total,
+      ongridMaxPayback: ongridMax.paybackYears,
+      maxSaving: Math.max(ongridMax.savingMonthly, fullSystem.savingMonthly),
+      reached: false, stage: 0, panels: 0, battModules: 0, type: 'ongrid', tried: 0
+    };
+    if (!(target > 0) || L.dailyKwh <= 0) return plan;
+
+    for (let k = 1; k <= nDay; k++) {
+      plan.tried++;
+      const e = evaluate(inp, L, k, 0, 'ongrid');
+      if (e.savingMonthly >= target - 1e-6) {
+        return Object.assign(plan, { reached: true, stage: 1, panels: k, battModules: 0, type: 'ongrid' });
+      }
+    }
+    for (let m = 1; m <= maxModules; m++) {
+      plan.tried++;
+      const k = panelsWithBatt(m);
+      const e = evaluate(inp, L, k, m, 'hybrid');
+      if (e.savingMonthly >= target - 1e-6) {
+        return Object.assign(plan, { reached: true, stage: 2, panels: k, battModules: m, type: 'hybrid' });
+      }
+    }
+    // Target is above what the site can save: return the largest sensible system.
+    return maxModules > 0
+      ? Object.assign(plan, { stage: 2, panels: fullPanels, battModules: maxModules, type: 'hybrid' })
+      : Object.assign(plan, { stage: 1, panels: nDay, battModules: 0, type: 'ongrid' });
+  }
+
+  function calculate(inp) {
+    const p = inp.p;
+    const L = baseLoad(inp);
+    const eff = n(p.battEff) > 0 ? n(p.battEff) : 1;
+    const dod = n(p.dod) > 0 ? n(p.dod) : 1;
+    const yieldPerKwp = n(p.psh) * n(p.pr);
+    let type, panels, battModules, plan = null;
+    let designYield = yieldPerKwp, pvTargetKwh = 0, battUsableReq = 0;
+
+    if (inp.sizing === 'target') {
+      plan = planForTarget(inp, L);
+      type = plan.type;
+      panels = plan.panels;
+      battModules = plan.battModules;
+      battUsableReq = Math.min(battModules * n(p.battModuleKwh) * dod, L.nightKwh);
+      pvTargetKwh = L.dayKwh + battUsableReq / eff;
+    } else {
+      type = inp.systemType;
+      if (type === 'ongrid') {
+        pvTargetKwh = L.dayKwh * n(inp.dayCover);
+      } else if (type === 'hybrid') {
+        battUsableReq = L.nightKwh * n(inp.nightCover);
+        pvTargetKwh = L.dayKwh + battUsableReq / eff;
+      } else {
+        battUsableReq = L.nightKwh + n(inp.autonomyDays) * L.dailyKwh;
+        designYield = yieldPerKwp * (n(inp.rainyFactor) > 0 ? n(inp.rainyFactor) : 1);
+        pvTargetKwh = L.dayKwh + L.nightKwh / eff;
+      }
+      const kwpNeed = designYield > 0 ? pvTargetKwh / designYield : 0;
+      panels = (kwpNeed > EPS && n(p.panelW) > 0) ? Math.ceil(kwpNeed * 1000 / n(p.panelW) - EPS) : 0;
+      const nomNeed = battUsableReq / dod;
+      battModules = (nomNeed > EPS && n(p.battModuleKwh) > 0) ? Math.ceil(nomNeed / n(p.battModuleKwh) - EPS) : 0;
+    }
+    const kwpReq = designYield > 0 ? pvTargetKwh / designYield : 0;
+    const battNominalReq = battUsableReq / dod;
+
+    const E = evaluate(inp, L, panels, battModules, type);
+    const warnings = [];
+
+    if (L.dailyKwh <= 0) {
+      warnings.push({ level: 'info', key: 'empty', text: 'กรอกค่าไฟ หน่วยไฟ หรือรายการเครื่องใช้ไฟฟ้าเพื่อเริ่มคำนวณ' });
+    } else {
+      if (plan) {
+        if (!(plan.target > 0)) {
+          warnings.push({ level: 'info', key: 'notarget', text: 'กรอกเป้าหมายว่าอยากประหยัดค่าไฟเดือนละกี่บาท' });
+        } else if (!plan.reached) {
+          warnings.push({ level: 'crit', key: 'unreachable', text: 'เป้าหมาย ' + Math.round(plan.target).toLocaleString('th-TH') + ' บาท/เดือน สูงกว่าที่ทำได้ ระบบนี้ประหยัดได้สูงสุดประมาณ ' + Math.round(plan.maxSaving).toLocaleString('th-TH') + ' บาท/เดือน เพราะยังมีค่าบริการรายเดือนและใช้ไฟได้ไม่เกินที่ใช้จริง ผลด้านบนแสดงระบบที่ใหญ่ที่สุดที่คุ้มค่า' });
+        }
+      }
+      if (inp.inputMode !== 'appliance' && L.app.monthlyKwh > 0) {
+        const diff = Math.abs(L.app.monthlyKwh - L.monthlyKwh) / L.monthlyKwh;
+        if (diff > 0.25) warnings.push({ level: 'warn', key: 'mismatch',
+          text: 'รายการเครื่องใช้รวมได้ประมาณ ' + Math.round(L.app.monthlyKwh) + ' kWh/เดือน ต่างจากหน่วยไฟที่ใช้คำนวณ (' + Math.round(L.monthlyKwh) + ' kWh/เดือน) เกิน 25% ลองตรวจชั่วโมงใช้งานหรือเครื่องที่ยังไม่ได้ใส่' });
+      }
+      if (inp.inputMode === 'appliance' && L.app.dayPct === null) {
+        warnings.push({ level: 'info', key: 'nosplit', text: 'ยังไม่มีชั่วโมงใช้งานในรายการ จึงใช้สัดส่วนกลางวัน/กลางคืนจากแถบเลื่อน' });
+      }
+      if (type !== 'ongrid' && L.app.peakW <= 0) {
+        warnings.push({ level: 'info', key: 'noload', text: 'ยังไม่มีรายการเครื่องใช้ไฟฟ้า อินเวอร์เตอร์จึงเลือกจากขนาดแผงอย่างเดียว ควรตรวจโหลดสูงสุดที่ต้องจ่ายตอนกลางคืนหรือไฟดับ' });
+      }
+      if (E.invByLoad > E.invByPv + EPS) {
+        warnings.push({ level: 'info', key: 'loaddriven', text: 'ขนาดอินเวอร์เตอร์ถูกกำหนดโดยโหลด (' + E.invByLoad.toFixed(2) + ' kW) มากกว่าขนาดแผง ตรวจเครื่องใช้กำลังสูง เช่น เครื่องทำน้ำอุ่น ปั๊ม หรือที่ชาร์จรถ' });
+      }
+      if (inp.exportOn && type !== 'offgrid' && E.invKw > 5) {
+        warnings.push({ level: 'warn', key: 'export5kw', text: 'โครงการโซลาร์ภาคประชาชนรับซื้อไฟส่วนเกินไม่เกิน 5 kW (AC) ต่อมิเตอร์ อินเวอร์เตอร์ ' + E.invKw + ' kW ต้องตั้งจำกัดการขายหรือตรวจเงื่อนไขก่อนยื่น' });
+      }
+      if (E.invKw >= 10) {
+        warnings.push({ level: 'info', key: 'phase', text: 'อินเวอร์เตอร์ตั้งแต่ 10 kW ขึ้นไป ตรวจว่าบ้านใช้ไฟ 1 เฟสหรือ 3 เฟส ขนาดมิเตอร์ และข้อกำหนดการเชื่อมต่อของการไฟฟ้าในพื้นที่' });
+      }
+      if (type !== 'offgrid' && E.curtailed > 0.05 * E.pvDaily && E.curtailed > 0.1) {
+        warnings.push({ level: 'info', key: 'curtail', text: 'ไฟจากแผงเหลือประมาณ ' + E.curtailed.toFixed(1) + ' kWh/วัน จะไม่ถูกใช้ (ไม่ได้ขายคืน) เกิดจากการปัดจำนวนแผงขึ้น เปิด "ขายไฟส่วนเกิน" หรือลดจำนวนแผงได้' });
+      }
+      if (type === 'offgrid') {
+        warnings.push({ level: 'warn', key: 'offgrid', text: 'ระบบ Off-grid: ถ้าฝนตกต่อเนื่องนานกว่าวันสำรองที่ตั้งไว้ ควรมีเครื่องปั่นไฟหรือแหล่งชาร์จสำรอง ค่าไฟหลังติดตั้งคิดเป็น 0 เพราะไม่ต่อการไฟฟ้า' });
+        if (E.unmetDaily > 0.01) warnings.push({ level: 'crit', key: 'unmet', text: 'วันแดดเฉลี่ยยังขาดไฟประมาณ ' + E.unmetDaily.toFixed(1) + ' kWh/วัน เพิ่มแผงหรือแบตเตอรี่' });
+      }
+    }
+
+    return Object.assign({}, L, E, {
+      systemType: type, sizing: inp.sizing === 'target' ? 'target' : 'type', plan,
+      yieldPerKwp, designYield, pvTargetKwh, kwpReq, battUsableReq, battNominalReq, warnings
+    });
+  }
+
+  return { DAYS_PER_MONTH, INVERTER_SIZES_KW, energyCharge, billFromKwh, kwhFromBill, applianceSummary, pickInverter, baseLoad, evaluate, planForTarget, calculate };
+})();
+if (typeof module !== 'undefined' && module.exports) module.exports = SolarCalc;
+</script>
+
+<script>
+(() => {
+  const LS_KEY = 'solar-sizing-th-v1';
+
+  const PRESETS = [
+    ['แอร์ 9,000 BTU (อินเวอร์เตอร์)', 750, 0, 6],
+    ['แอร์ 12,000 BTU (อินเวอร์เตอร์)', 1000, 0, 6],
+    ['แอร์ 18,000 BTU (อินเวอร์เตอร์)', 1600, 0, 6],
+    ['แอร์ 24,000 BTU (อินเวอร์เตอร์)', 2100, 0, 6],
+    ['ตู้เย็น', 150, 4, 4],
+    ['ตู้แช่', 250, 6, 6],
+    ['หลอดไฟ LED', 10, 0, 5],
+    ['พัดลม', 50, 4, 6],
+    ['ทีวี', 100, 3, 3],
+    ['คอมพิวเตอร์', 200, 8, 1],
+    ['ปั๊มน้ำ', 400, 1, 0.5],
+    ['เครื่องซักผ้า', 500, 1, 0],
+    ['หม้อหุงข้าว', 700, 0.5, 0.5],
+    ['ไมโครเวฟ', 1000, 0.2, 0.2],
+    ['เตารีด', 1000, 0.5, 0],
+    ['เครื่องทำน้ำอุ่น', 3500, 0.2, 0.3],
+    ['ที่ชาร์จรถ EV 7.4 kW', 7400, 0, 4],
+    ['อื่น ๆ (กำหนดเอง)', 100, 1, 1]
+  ];
+
+  const DEFAULTS = {
+    inputMode: 'bill', bill: 2200, kwhMonth: 520, dayPct: 55, tariffMode: 'residential',
+    systemType: 'hybrid', exportOn: false, sizing: 'target', targetSaving: 1500,
+    opts: { dayCover: 100, nightCover: 100, autonomyDays: 1, rainyFactor: 80 },
+    params: {
+      psh: 5.0, pr: 78, panelW: 620, panelL: 2382, panelWd: 1134, panelKg: 33.4, areaFactor: 115,
+      battV: 51.2, battModuleKwh: 5.12, dod: 90, battEff: 92, dcAc: 1.3, simultaneity: 80, loadMargin: 125,
+      rate1: 3.0, rate2: 4.1584, rate3: 4.3583, service: 24.62, ft: 0.1623, vat: 7, flatRate: 4.5,
+      exportPrice: 2.20,
+      costPvPerKwp: 18000, costInvOngrid: 4500, costInvHybrid: 9000, costBattPerKwh: 8000, costFixed: 15000
+    },
+    appliances: [
+      { name: 'แอร์ 12,000 BTU (อินเวอร์เตอร์)', w: 1000, qty: 1, hDay: 6, hNight: 0 },
+      { name: 'แอร์ 9,000 BTU (อินเวอร์เตอร์)', w: 750, qty: 1, hDay: 0, hNight: 7 },
+      { name: 'ตู้เย็น', w: 150, qty: 1, hDay: 4, hNight: 4 },
+      { name: 'หลอดไฟ LED', w: 10, qty: 10, hDay: 0, hNight: 5 },
+      { name: 'ทีวี', w: 100, qty: 1, hDay: 3, hNight: 3 },
+      { name: 'คอมพิวเตอร์', w: 200, qty: 1, hDay: 8, hNight: 1 },
+      { name: 'ปั๊มน้ำ', w: 400, qty: 1, hDay: 1, hNight: 0.5 },
+      { name: 'เครื่องซักผ้า', w: 500, qty: 1, hDay: 1, hNight: 0 },
+      { name: 'หม้อหุงข้าว', w: 700, qty: 1, hDay: 0.5, hNight: 0.5 }
+    ]
+  };
+
+  const PARAM_GROUPS = [
+    { title: 'แสงแดดและแผง', fields: [
+      ['psh', 'ชั่วโมงแดดเทียบเท่า (PSH)', 'ชม./วัน', 0.1, 'เฉลี่ยทั้งประเทศ 18.2 MJ/m²·วัน ≈ 5.06 kWh/m²·วัน'],
+      ['pr', 'ประสิทธิภาพรวมระบบ (PR)', '%', 1, 'รวมความร้อน ฝุ่น สายไฟ และอินเวอร์เตอร์'],
+      ['panelW', 'กำลังแผงต่อแผ่น', 'W', 5],
+      ['panelL', 'ความยาวแผง', 'มม.', 1],
+      ['panelWd', 'ความกว้างแผง', 'มม.', 1],
+      ['panelKg', 'น้ำหนักแผง', 'กก.', 0.1],
+      ['areaFactor', 'พื้นที่รวมระยะห่างและทางเดิน', '%', 5]
+    ]},
+    { title: 'แบตเตอรี่และอินเวอร์เตอร์', fields: [
+      ['battV', 'แรงดันแบตเตอรี่', 'V', 0.1],
+      ['battModuleKwh', 'ความจุต่อก้อน', 'kWh', 0.01, '51.2 V 100 Ah = 5.12 kWh'],
+      ['dod', 'ใช้ได้ลึกสุด (DoD)', '%', 1],
+      ['battEff', 'ประสิทธิภาพชาร์จ–จ่าย', '%', 1],
+      ['dcAc', 'อัตราส่วน DC/AC สูงสุด', 'เท่า', 0.05, 'แผง kWp ÷ อินเวอร์เตอร์ kW'],
+      ['simultaneity', 'โหลดที่เปิดพร้อมกัน', '%', 5],
+      ['loadMargin', 'เผื่อกำลังอินเวอร์เตอร์', '%', 5]
+    ]},
+    { title: 'อัตราค่าไฟ บ้านอยู่อาศัย (ตั้งแต่บิล ก.ย. 2569)', fields: [
+      ['rate1', 'หน่วยที่ 1–200', 'บาท/หน่วย', 0.0001],
+      ['rate2', 'หน่วยที่ 201–400', 'บาท/หน่วย', 0.0001],
+      ['rate3', 'หน่วยที่ 401 ขึ้นไป', 'บาท/หน่วย', 0.0001],
+      ['service', 'ค่าบริการรายเดือน', 'บาท', 0.01, 'ตรวจกับใบแจ้งค่าไฟจริง'],
+      ['ft', 'ค่า Ft', 'บาท/หน่วย', 0.0001, 'งวด ก.ย.–ธ.ค. 2569 = 0.1623'],
+      ['vat', 'VAT', '%', 1],
+      ['flatRate', 'อัตราเฉลี่ยคงที่', 'บาท/หน่วย', 0.01, 'ใช้เมื่อเลือกอัตราเฉลี่ยคงที่ในข้อ 1 (รวมทุกอย่างแล้ว)']
+    ]},
+    { title: 'ราคาประมาณการ (แก้เป็นราคาของคุณ)', fields: [
+      ['costPvPerKwp', 'แผง + โครงสร้าง + ติดตั้ง', 'บาท/kWp', 500],
+      ['costInvOngrid', 'อินเวอร์เตอร์ On-grid', 'บาท/kW', 500],
+      ['costInvHybrid', 'อินเวอร์เตอร์ Hybrid / Off-grid', 'บาท/kW', 500],
+      ['costBattPerKwh', 'แบตเตอรี่ LiFePO4', 'บาท/kWh', 500],
+      ['costFixed', 'ค่าใช้จ่ายคงที่ (ขออนุญาต วิศวกร อุปกรณ์ป้องกัน)', 'บาท', 1000]
+    ]}
+  ];
+
+  const TYPE_LABEL = { ongrid: 'On-grid', hybrid: 'Hybrid', offgrid: 'Off-grid' };
+
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const num = (v) => { const x = parseFloat(v); return Number.isFinite(x) ? x : 0; };
+  const fmt = (v, d = 0) => Number(v).toLocaleString('th-TH', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function mergeDefaults(s) {
+    const d = clone(DEFAULTS);
+    if (!s || typeof s !== 'object') return d;
+    return {
+      ...d, ...s,
+      opts: { ...d.opts, ...(s.opts || {}) },
+      params: { ...d.params, ...(s.params || {}) },
+      appliances: Array.isArray(s.appliances) ? s.appliances : d.appliances
+    };
+  }
+  function loadState(seed) {
+    if (seed && seed.inputMode) return mergeDefaults(seed);
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) return mergeDefaults(JSON.parse(raw));
+    } catch (e) { /* storage unavailable */ }
+    return clone(DEFAULTS);
+  }
+  function saveState() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  let state;
+
+  function buildInput() {
+    const P = state.params, O = state.opts;
+    return {
+      inputMode: state.inputMode, bill: num(state.bill), kwhMonth: num(state.kwhMonth), dayPct: num(state.dayPct),
+      appliances: state.appliances, systemType: state.systemType,
+      sizing: state.sizing === 'type' ? 'type' : 'target', targetSaving: num(state.targetSaving),
+      dayCover: num(O.dayCover) / 100, nightCover: num(O.nightCover) / 100,
+      autonomyDays: num(O.autonomyDays), rainyFactor: num(O.rainyFactor) / 100,
+      exportOn: !!state.exportOn, exportPrice: num(P.exportPrice),
+      tariff: {
+        mode: state.tariffMode,
+        blocks: [{ upTo: 200, rate: num(P.rate1) }, { upTo: 400, rate: num(P.rate2) }, { upTo: Infinity, rate: num(P.rate3) }],
+        service: num(P.service), ft: num(P.ft), vat: num(P.vat) / 100, flatRate: num(P.flatRate)
+      },
+      p: {
+        psh: num(P.psh), pr: num(P.pr) / 100, panelW: num(P.panelW), panelL: num(P.panelL), panelWd: num(P.panelWd),
+        panelKg: num(P.panelKg), areaFactor: num(P.areaFactor) / 100, battV: num(P.battV), battModuleKwh: num(P.battModuleKwh),
+        dod: num(P.dod) / 100, battEff: num(P.battEff) / 100, dcAc: num(P.dcAc), simultaneity: num(P.simultaneity) / 100,
+        loadMargin: num(P.loadMargin) / 100, costPvPerKwp: num(P.costPvPerKwp), costInvOngrid: num(P.costInvOngrid),
+        costInvHybrid: num(P.costInvHybrid), costBattPerKwh: num(P.costBattPerKwh), costFixed: num(P.costFixed)
+      }
+    };
+  }
+
+  /* ---------- build static controls ---------- */
+  function buildParamGroups() {
+    $('#paramGroups').innerHTML = PARAM_GROUPS.map((g) => `
+      <div class="pgroup"><h3>${esc(g.title)}</h3><div class="pgrid">
+        ${g.fields.map(([k, label, unit, step, note]) => `
+          <div class="pfield">
+            <label for="p-${k}">${esc(label)}</label>
+            <div class="input-unit"><input id="p-${k}" data-param="${k}" type="number" step="${step}" min="0"><span>${esc(unit)}</span></div>
+            ${note ? `<small>${esc(note)}</small>` : ''}
+          </div>`).join('')}
+      </div></div>`).join('');
+  }
+  function buildPresets() {
+    $('#preset').innerHTML = PRESETS.map((p, i) => `<option value="${i}">${esc(p[0])} · ${fmt(p[1])} W</option>`).join('');
+  }
+
+  function renderAppliances() {
+    $('#appBody').innerHTML = state.appliances.map((a, i) => `
+      <tr data-i="${i}">
+        <td class="c-name"><input data-k="name" value="${esc(a.name)}" aria-label="ชื่อเครื่องใช้ แถว ${i + 1}"></td>
+        <td class="c-w"><input data-k="w" type="number" min="0" step="10" value="${a.w}" aria-label="วัตต์ แถว ${i + 1}"></td>
+        <td class="c-q"><input data-k="qty" type="number" min="0" step="1" value="${a.qty}" aria-label="จำนวน แถว ${i + 1}"></td>
+        <td class="c-h"><input data-k="hDay" type="number" min="0" max="12" step="0.5" value="${a.hDay}" aria-label="ชั่วโมงกลางวัน แถว ${i + 1}"></td>
+        <td class="c-h"><input data-k="hNight" type="number" min="0" max="12" step="0.5" value="${a.hNight}" aria-label="ชั่วโมงกลางคืน แถว ${i + 1}"></td>
+        <td class="c-k tnum" data-kwh></td>
+        <td class="c-x"><button type="button" class="icon-btn" data-del="${i}" aria-label="ลบ ${esc(a.name)}">×</button></td>
+      </tr>`).join('') || `<tr><td colspan="7" class="hint" style="padding:12px">ยังไม่มีรายการ เลือกเครื่องใช้ด้านล่างแล้วกดเพิ่ม</td></tr>`;
+    updateApplianceRowKwh();
+  }
+  function updateApplianceRowKwh() {
+    $$('#appBody tr[data-i]').forEach((tr) => {
+      const a = state.appliances[+tr.dataset.i];
+      const p = num(a.w) * num(a.qty);
+      const k = p * (Math.min(12, num(a.hDay)) + Math.min(12, num(a.hNight))) / 1000;
+      tr.querySelector('[data-kwh]').textContent = fmt(k, 2);
+    });
+  }
+
+  /* ---------- sync state -> controls ---------- */
+  function writeControls() {
+    $$('input[name="inputMode"]').forEach((r) => { r.checked = r.value === state.inputMode; });
+    $$('input[name="sysType"]').forEach((r) => { r.checked = r.value === state.systemType; });
+    $$('input[name="sizing"]').forEach((r) => { r.checked = r.value === state.sizing; });
+    $('#targetSaving').value = state.targetSaving;
+    $('#bill').value = state.bill;
+    $('#kwhMonth').value = state.kwhMonth;
+    $('#tariffMode').value = state.tariffMode;
+    $('#dayPct').value = state.dayPct;
+    $('#dayCover').value = state.opts.dayCover;
+    $('#nightCover').value = state.opts.nightCover;
+    $('#autonomyDays').value = state.opts.autonomyDays;
+    $('#rainyFactor').value = state.opts.rainyFactor;
+    $('#exportOn').checked = !!state.exportOn;
+    $$('[data-param]').forEach((el) => { el.value = state.params[el.dataset.param]; });
+    renderAppliances();
+  }
+
+  /* ---------- render results ---------- */
+  function setHTML(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
+
+  function render() {
+    const input = buildInput();
+    const r = SolarCalc.calculate(input);
+    const P = state.params;
+    const type = r.systemType;
+    const isTarget = r.sizing === 'target';
+    const appMode = state.inputMode === 'appliance';
+
+    // visibility of inputs
+    $('#f-bill').hidden = state.inputMode !== 'bill';
+    $('#f-kwh').hidden = state.inputMode !== 'kwh';
+    $('#f-appnote').hidden = !appMode;
+    $('#appMonthly').value = fmt(r.app.monthlyKwh, 0);
+    $('#sz-target').hidden = !isTarget;
+    $('#sz-type').hidden = isTarget;
+    $('#opt-ongrid').hidden = state.systemType !== 'ongrid';
+    $('#opt-hybrid').hidden = state.systemType !== 'hybrid';
+    $('#opt-offgrid').hidden = state.systemType !== 'offgrid';
+    $('#opt-export').hidden = type === 'offgrid';
+    $('#planCard').hidden = !isTarget;
+    if (isTarget && r.plan) {
+      const pl = r.plan;
+      $('#targetPicks').innerHTML = r.dailyKwh > 0
+        ? `<button type="button" class="chip-btn" data-target="${Math.floor(pl.ongridMaxSaving)}">On-grid อย่างเดียวได้สูงสุด <b class="tnum">${fmt(Math.floor(pl.ongridMaxSaving), 0)}</b> บาท</button>
+           <button type="button" class="chip-btn" data-target="${Math.floor(pl.maxSaving)}">เพิ่มแบตแล้วได้สูงสุด <b class="tnum">${fmt(Math.floor(pl.maxSaving), 0)}</b> บาท</button>`
+        : '';
+    }
+    $('#dayCoverOut').textContent = state.opts.dayCover + '%';
+    $('#nightCoverOut').textContent = state.opts.nightCover + '%';
+
+    // kWh derived hint
+    let hint = '';
+    if (state.inputMode === 'bill') hint = state.tariffMode === 'flat'
+      ? `เทียบเท่า ${fmt(r.monthlyKwh, 0)} kWh/เดือน ที่อัตรา ${fmt(P.flatRate, 2)} บาท/หน่วย (สำหรับกิจการหรือ TOU ใส่อัตราเฉลี่ยรวมทุกอย่างในข้อ 4)`
+      : `เทียบเท่า ${fmt(r.monthlyKwh, 0)} kWh/เดือน ถอดจากอัตราก้าวหน้า กฟภ. 1.1.2 / กฟน. 1.2 + Ft + VAT`;
+    else if (state.inputMode === 'kwh') hint = `ค่าไฟโดยประมาณ ${fmt(r.billBefore, 0)} บาท/เดือน`;
+    else hint = `ค่าไฟโดยประมาณ ${fmt(r.billBefore, 0)} บาท/เดือน คิดจากรายการในข้อ 2`;
+    $('#kwhDerived').textContent = hint;
+
+    // day/night strip
+    const dp = Math.round(r.dayPct);
+    $('#dayPct').disabled = appMode && r.app.dayPct !== null;
+    if (appMode && r.app.dayPct !== null) $('#dayPct').value = dp;
+    $('#dnDay').style.width = dp + '%';
+    $('#dnNight').style.width = (100 - dp) + '%';
+    $('#dnDay').textContent = dp >= 14 ? `กลางวัน ${dp}%` : '';
+    $('#dnNight').textContent = (100 - dp) >= 14 ? `กลางคืน ${100 - dp}%` : '';
+    $('#dayPct').setAttribute('aria-valuetext', `กลางวัน ${dp}% กลางคืน ${100 - dp}%`);
+    const ab = $('#useAppSplit');
+    const appDp = r.app.dayPct === null ? null : Math.round(r.app.dayPct);
+    ab.hidden = appMode || appDp === null || appDp === Math.round(num(state.dayPct));
+    ab.textContent = appDp === null ? '' : `ใช้สัดส่วนจากรายการเครื่องใช้ (${appDp}%)`;
+
+    // appliance chips
+    $('#appChips').innerHTML = `
+      <span class="chip">รวม <b class="tnum">${fmt(r.app.totalKwh, 2)}</b> kWh/วัน ≈ <b class="tnum">${fmt(r.app.monthlyKwh, 0)}</b> kWh/เดือน</span>
+      <span class="chip">กลางวัน <b class="tnum">${r.app.dayPct === null ? '–' : fmt(r.app.dayPct, 0) + '%'}</b></span>
+      <span class="chip">โหลดรวมถ้าเปิดพร้อมกัน <b class="tnum">${fmt(r.app.peakW / 1000, 2)}</b> kW</span>`;
+    updateApplianceRowKwh();
+
+    // nameplate
+    $('#r-type').textContent = TYPE_LABEL[type] + (isTarget ? ' · ตามเป้า' : '');
+    $('#r-kwp').textContent = fmt(r.kwp, 2);
+    $('#r-kwp-sub').innerHTML = isTarget
+      ? `เป้าประหยัด ${fmt(r.plan.target, 0)} บาท/เดือน<br>ใช้ไฟ ${fmt(r.monthlyKwh, 0)} kWh/เดือน`
+      : `ขั้นต่ำ ${fmt(r.kwpReq, 2)} kWp<br>ใช้ไฟ ${fmt(r.monthlyKwh, 0)} kWh/เดือน`;
+    setHTML('r-panels', r.panels > 0
+      ? `<b>${fmt(r.panels)}</b>แผง × ${fmt(P.panelW)} W<small>${fmt(P.panelL)}×${fmt(P.panelWd)} มม. น้ำหนักรวม ${fmt(r.panelWeight, 0)} กก.</small>`
+      : '–');
+    setHTML('r-inv', r.invKw > 0
+      ? `<b>${fmt(r.invKw, r.invKw % 1 ? 1 : 0)}</b>kW ${type === 'ongrid' ? 'On-grid' : 'Hybrid / Off-grid'}<small>ขั้นต่ำ ${fmt(r.invReq, 2)} kW · DC/AC ${r.invKw > 0 ? fmt(r.kwp / r.invKw, 2) : '–'}</small>`
+      : '–');
+    setHTML('r-batt', type === 'ongrid'
+      ? (isTarget ? `ไม่ต้องใช้<small>On-grid อย่างเดียวถึงเป้าแล้ว</small>` : `ไม่ใช้<small>ระบบ On-grid ไม่มีแบตเตอรี่</small>`)
+      : r.battModules > 0
+        ? `<b>${fmt(r.battNominal, 2)}</b>kWh<small>ใช้ได้จริง ${fmt(r.battUsable, 2)} kWh · ${fmt(r.battAh, 0)} Ah @ ${fmt(P.battV, 1)} V · ${fmt(r.battModules)} ก้อน × ${fmt(P.battModuleKwh, 2)} kWh</small>`
+        : `ไม่ใช้<small>ตั้งให้แบตจ่ายไฟกลางคืน 0%</small>`);
+    setHTML('r-roof', r.panels > 0 ? `<b>${fmt(r.roofArea, 1)}</b>m²<small>รวมระยะห่าง ${fmt(P.areaFactor, 0)}% ของพื้นที่แผง</small>` : '–');
+    setHTML('r-prod', `<b>${fmt(r.pvMonthly, 0)}</b>kWh/เดือน<small>${fmt(r.pvDaily, 1)} kWh/วัน · ${fmt(r.pvYearly, 0)} kWh/ปี</small>`);
+
+    // money tiles
+    $('#t-before').textContent = fmt(r.billBefore, 0);
+    $('#t-after').textContent = fmt(r.billAfter, 0);
+    $('#t-after-sub').textContent = type === 'offgrid' ? 'บาท/เดือน (ไม่ต่อการไฟฟ้า)' : 'บาท/เดือน';
+    $('#t-save').textContent = fmt(r.savingMonthly, 0);
+    $('#t-save-sub').textContent = r.exportIncome > 0 ? `บาท/เดือน (รวมขายไฟ ${fmt(r.exportIncome, 0)})` : 'บาท/เดือน';
+    $('#t-self').textContent = fmt(r.selfSufficiency * 100, 0) + '%';
+    $('#t-cost').textContent = fmt(Math.round(r.cost.total / 1000) * 1000, 0);
+    $('#t-cost-sub').textContent = 'บาท (ตามราคาในข้อ 4)';
+    $('#t-payback').textContent = r.paybackYears === null ? '–' : fmt(r.paybackYears, 1);
+
+    lastResult = r;
+    if (isTarget) renderPlan(r);
+    renderFlow(r);
+    renderNotes(r);
+    renderSteps(r, input);
+    renderMini(r);
+    renderShare(r);
+  }
+
+  let lastResult = null;
+
+  /* Target plan: step 1 on-grid, step 2 battery, progress vs target, and the two options side by side. */
+  function renderPlan(r) {
+    const pl = r.plan, P = state.params;
+    const target = pl.target;
+    const onPart = pl.stage === 2 ? Math.min(pl.ongridMaxSaving, r.savingMonthly) : r.savingMonthly;
+    const battPart = Math.max(0, r.savingMonthly - onPart);
+    const battPartShown = Math.max(0, Math.round(r.savingMonthly) - Math.round(onPart)); // so the two parts add up to the total shown
+    const domainRaw = Math.max(target, r.savingMonthly, 1);
+    const domain = domainRaw * 1.08;
+    $('#goalLabel').textContent = target > 0
+      ? (pl.reached ? `ประหยัดได้ ถึงเป้า ${fmt(target, 0)} บาท` : `ประหยัดได้ ยังไม่ถึงเป้า ${fmt(target, 0)} บาท`)
+      : 'กรอกเป้าหมายในข้อ 3';
+    $('#goalTotal').textContent = `${fmt(r.savingMonthly, 0)} บาท/เดือน`;
+    const seg = (cls, v, label) => v > 0.5
+      ? `<div class="${cls}" style="width:${(v / domain * 100).toFixed(3)}%" title="${esc(label)} ${fmt(v, 0)} บาท/เดือน"></div>` : '';
+    $('#goalBar').innerHTML = seg('seg-s1', onPart, 'On-grid') + seg('seg-s2', battPart, 'แบตเตอรี่');
+    const mark = $('#goalMark');
+    mark.hidden = !(target > 0);
+    const left = target / domain * 100;
+    mark.style.left = left.toFixed(3) + '%';
+    mark.className = 'goal-mark' + (left > 80 ? ' edge-r' : left < 15 ? ' edge-l' : '');
+    $('#goalMarkLabel').textContent = `เป้า ${fmt(target, 0)}`;
+
+    const nDay = pl.ongridMaxPanels;
+    const s1Panels = pl.stage === 1 ? r.panels : nDay;
+    const s1Kwp = s1Panels * P.panelW / 1000;
+    const s1Html = pl.stage === 1 && pl.reached
+      ? `แผง ${fmt(s1Panels)} แผง (${fmt(s1Kwp, 2)} kWp) ลดค่าไฟได้ ${fmt(onPart, 0)} บาท/เดือน <span class="ok">ถึงเป้าแล้ว ไม่ต้องใช้แบตเตอรี่</span>`
+      : `แผง ${fmt(s1Panels)} แผง (${fmt(s1Kwp, 2)} kWp) ใช้ไฟกลางวันได้ครบ ${fmt(r.dayKwh, 1)} kWh/วัน ลดค่าไฟได้สูงสุด ${fmt(pl.ongridMaxSaving, 0)} บาท/เดือน`
+        + (target > pl.ongridMaxSaving ? ` ยังขาดอีก ${fmt(target - pl.ongridMaxSaving, 0)} บาท` : '');
+    const extraPanels = Math.max(0, r.panels - nDay);
+    const s2Html = pl.stage === 2
+      ? `แบตเตอรี่ ${fmt(r.battModules)} ก้อน (${fmt(r.battNominal, 2)} kWh) + แผงเพิ่ม ${fmt(extraPanels)} แผงไว้ชาร์จ ลดค่าไฟกลางคืนเพิ่มอีก ${fmt(battPartShown, 0)} บาท/เดือน`
+        + (pl.reached ? ' <span class="ok">ถึงเป้าแล้ว</span>' : ` (แบตจ่ายไฟกลางคืนได้ครบแล้ว)`)
+      : 'ไม่ต้องใช้';
+    $('#stages').innerHTML = `
+      <li><span class="sn seg-s1">1</span><div><b class="t">On-grid ก่อน</b>${s1Html}</div></li>
+      <li class="${pl.stage === 2 ? '' : 'off'}"><span class="sn seg-s2">2</span><div><b class="t">เพิ่มแบตเตอรี่</b>${s2Html}</div></li>`;
+
+    const rows = [];
+    if (pl.stage === 2) {
+      rows.push([`On-grid อย่างเดียว (${fmt(nDay)} แผง)`, pl.ongridMaxSaving, pl.ongridMaxCost, pl.ongridMaxPayback]);
+      rows.push([`ตามเป้า: Hybrid ${fmt(r.panels)} แผง + แบต ${fmt(r.battNominal, 2)} kWh`, r.savingMonthly, r.cost.total, r.paybackYears]);
+    }
+    $('#optWrap').hidden = rows.length === 0;
+    $('#optBody').innerHTML = rows.map(([l, s, c, pb]) =>
+      `<tr><td>${esc(l)}</td><td class="tnum">${fmt(s, 0)}</td><td class="tnum">${fmt(Math.round(c / 1000) * 1000, 0)}</td><td class="tnum">${pb === null ? '–' : fmt(pb, 1) + ' ปี'}</td></tr>`).join('');
+  }
+
+  // Public build: the share link and QR code follow wherever this file is hosted.
+  const APP_URL = (() => {
+    const l = window.location;
+    return /^https?:$/.test(l.protocol) ? l.origin + l.pathname.replace(/index\.html?$/i, '') : '';
+  })();
+  const PHONE = '086-998-1200';
+  const CONTACT_LINE = 'สนใจติดตั้งโซลาร์ ติดต่อ บริษัท บลู ซิสเต็ม เทคโนโลยี จำกัด คุณพลพัฒน์ พรหมสุวรรณ โทร ' + PHONE;
+  let qrDone = false;
+  function renderShare(r) {
+    const hosted = !!APP_URL;
+    $('#shareApp').hidden = !hosted;
+    $('#shareLocalNote').hidden = hosted;
+    $('#lineResult').href = 'https://line.me/R/share?text=' + encodeURIComponent(summaryText(r) + (hosted ? '\nคำนวณเองได้ที่ ' + APP_URL : ''));
+    if (!hosted) return;
+    $('#appLink').value = APP_URL;
+    $('#lineApp').href = 'https://social-plugins.line.me/lineit/share?url=' + encodeURIComponent(APP_URL)
+      + '&text=' + encodeURIComponent('เครื่องคำนวณขนาดระบบโซลาร์ ใส่ค่าไฟแล้วรู้ขนาดแผง แบตเตอรี่ และระยะคืนทุน · ' + CONTACT_LINE);
+    if (!qrDone && typeof qrcode === 'function') {
+      const q = qrcode(0, 'M');
+      q.addData(APP_URL);
+      q.make();
+      $('#qrBox').innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true, title: 'QR code: ' + APP_URL });
+      qrDone = true;
+    }
+  }
+
+
+  function niceStep(raw) {
+    if (!(raw > 0)) return 1;
+    const p = Math.pow(10, Math.floor(Math.log10(raw)));
+    const m = raw / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+  }
+
+  function renderFlow(r) {
+    const off = r.systemType === 'offgrid';
+    const useSegs = [
+      { cls: 'seg-s1', label: 'โซลาร์ใช้ตรง', v: r.direct },
+      { cls: 'seg-s2', label: 'แบตเตอรี่', v: r.fromBatt },
+      off ? { cls: 'seg-off', label: 'ขาดไฟ', v: r.unmetDaily } : { cls: 'seg-s3', label: 'ซื้อจากการไฟฟ้า', v: r.gridDaily }
+    ];
+    const pvSegs = [
+      { cls: 'seg-s1', label: 'ใช้ตรงตอนกลางวัน', v: r.direct },
+      { cls: 'seg-s2', label: 'ชาร์จแบตเตอรี่', v: r.chargeUsed },
+      { cls: 'seg-s3', label: 'ขายคืนการไฟฟ้า', v: r.exported },
+      { cls: 'seg-off', label: 'เหลือไม่ได้ใช้', v: r.curtailed }
+    ];
+    const max = Math.max(r.dailyKwh, r.pvDaily, 0.0001);
+    const step = niceStep(max / 4);
+    const domain = Math.ceil(max / step - 1e-9) * step;
+    const bar = (segs, total) => segs.filter((s) => s.v > 0.005).map((s) =>
+      `<div class="${s.cls}" style="width:${(s.v / domain * 100).toFixed(3)}%" data-tip="${esc(s.label)}: ${fmt(s.v, 2)} kWh/วัน (${fmt(total > 0 ? s.v / total * 100 : 0, 0)}%)"></div>`).join('');
+    $('#barUse').innerHTML = bar(useSegs, r.dailyKwh);
+    $('#barPv').innerHTML = bar(pvSegs, r.pvDaily);
+    const ticks = [];
+    for (let v = 0; v <= domain + 1e-9; v += step) ticks.push(v);
+    const gridHtml = ticks.map((v) => `<i style="left:${(v / domain * 100).toFixed(3)}%"></i>`).join('');
+    $('#gridA').innerHTML = gridHtml;
+    $('#gridB').innerHTML = gridHtml;
+    $('#axis').innerHTML = ticks.map((v, i) => {
+      const left = (v / domain * 100);
+      const style = i === ticks.length - 1 && ticks.length > 1 ? `right:0;transform:none` : `left:${left.toFixed(3)}%`;
+      return `<em style="${style}">${fmt(v, step < 1 ? 1 : 0)}${i === ticks.length - 1 ? ' kWh' : ''}</em>`;
+    }).join('');
+
+    const rows = [
+      ['seg-s1', 'โซลาร์ใช้ตรง', r.direct, r.direct],
+      ['seg-s2', 'แบตเตอรี่ (จ่าย / ชาร์จ)', r.fromBatt, r.chargeUsed],
+      ['seg-s3', 'การไฟฟ้า (ซื้อ / ขาย)', off ? null : r.gridDaily, r.exported],
+      ['seg-off', off ? 'ขาดไฟ / เหลือไม่ได้ใช้' : 'เหลือไม่ได้ใช้', off ? r.unmetDaily : null, r.curtailed]
+    ];
+    $('#legendBody').innerHTML = rows.map(([c, l, a, b]) =>
+      `<tr><td><span class="sw ${c}"></span>${esc(l)}</td><td class="tnum">${a === null ? '–' : fmt(a, 2)}</td><td class="tnum">${b === null ? '–' : fmt(b, 2)}</td></tr>`).join('')
+      + `<tr><td><b>รวม</b></td><td class="tnum"><b>${fmt(r.dailyKwh, 2)}</b></td><td class="tnum"><b>${fmt(r.pvDaily, 2)}</b></td></tr>`;
+  }
+
+  function renderNotes(r) {
+    const label = { info: 'หมายเหตุ', warn: 'ตรวจสอบ', crit: 'สำคัญ' };
+    const list = r.warnings.length ? r.warnings : [{ level: 'info', text: 'ไม่พบประเด็นที่ต้องระวังจากข้อมูลที่กรอก ยังควรสำรวจหน้างานก่อนเสนอราคา' }];
+    $('#notes').innerHTML = list.map((w) => `<li class="n-${w.level}"><b>${label[w.level]}</b>${esc(w.text)}</li>`).join('');
+  }
+
+  function renderSteps(r, inp) {
+    const P = state.params, O = state.opts, type = r.systemType;
+    const rows = [];
+    if (state.inputMode === 'bill') {
+      rows.push(['หน่วยไฟต่อเดือน', state.tariffMode === 'flat'
+        ? `${fmt(state.bill, 0)} บาท ÷ ${fmt(P.flatRate, 2)} = <b>${fmt(r.monthlyKwh, 1)} kWh</b>`
+        : `ถอดค่าไฟ ${fmt(state.bill, 0)} บาท จากอัตราก้าวหน้า + Ft ${fmt(P.ft, 4)} + ค่าบริการ ${fmt(P.service, 2)} + VAT ${fmt(P.vat, 0)}% = <b>${fmt(r.monthlyKwh, 1)} kWh</b>`]);
+    } else if (state.inputMode === 'kwh') {
+      rows.push(['หน่วยไฟต่อเดือน', `<b>${fmt(r.monthlyKwh, 1)} kWh</b> (กรอกเอง)`]);
+    } else {
+      rows.push(['หน่วยไฟต่อเดือน', `${fmt(r.app.totalKwh, 2)} kWh/วัน × 30.42 = <b>${fmt(r.monthlyKwh, 1)} kWh</b>`]);
+    }
+    rows.push(['ไฟต่อวัน', `${fmt(r.monthlyKwh, 1)} ÷ 30.42 = <b>${fmt(r.dailyKwh, 2)} kWh</b> · กลางวัน ${fmt(r.dayPct, 0)}% = ${fmt(r.dayKwh, 2)} · กลางคืน ${fmt(r.nightKwh, 2)}`]);
+    rows.push(['ไฟจากแผง 1 kWp', `PSH ${fmt(P.psh, 2)} × PR ${fmt(P.pr, 0)}% = <b>${fmt(r.yieldPerKwp, 2)} kWh/วัน</b>${type === 'offgrid' ? ` · ออกแบบหน้าฝน × ${fmt(O.rainyFactor, 0)}% = ${fmt(r.designYield, 2)}` : ''}`]);
+    if (r.sizing === 'target') {
+      const pl = r.plan;
+      rows.push(['เป้าหมาย', `ประหยัด <b>${fmt(pl.target, 0)} บาท/เดือน</b> · On-grid ทำได้สูงสุด ${fmt(pl.ongridMaxSaving, 0)} · เพิ่มแบตแล้วสูงสุด ${fmt(pl.maxSaving, 0)}`]);
+      rows.push(['ขั้นที่ 1 On-grid', `เพิ่มแผงทีละแผง ไม่เกินไฟกลางวัน ${fmt(r.dayKwh, 2)} ÷ ${fmt(r.yieldPerKwp, 2)} ÷ ${fmt(P.panelW / 1000, 2)} kW ปัดขึ้น = ${fmt(pl.ongridMaxPanels)} แผง`
+        + (pl.stage === 1 ? ` → ใช้ <b>${fmt(r.panels)} แผง</b> ประหยัด ${fmt(r.savingMonthly, 0)} บาท${pl.reached ? ' ถึงเป้า' : ''}` : ` → ประหยัด ${fmt(pl.ongridMaxSaving, 0)} บาท ยังไม่ถึงเป้า`)]);
+      if (pl.stage === 2) {
+        rows.push(['ขั้นที่ 2 แบตเตอรี่', `เพิ่มทีละก้อน ${fmt(P.battModuleKwh, 2)} kWh (ใช้ได้ ${fmt(P.battModuleKwh * P.dod / 100, 2)} kWh) → <b>${fmt(r.battModules)} ก้อน</b> แบตจ่ายกลางคืน ${fmt(r.battUsableReq, 2)} kWh/วัน · แผงต้องผลิต ${fmt(r.dayKwh, 2)} + ${fmt(r.battUsableReq, 2)} ÷ ${fmt(P.battEff, 0)}% = ${fmt(r.pvTargetKwh, 2)} kWh/วัน → <b>${fmt(r.panels)} แผง = ${fmt(r.kwp, 2)} kWp</b>`]);
+      }
+    } else if (type === 'ongrid') {
+      rows.push(['ไฟที่แผงต้องผลิต', `กลางวัน ${fmt(r.dayKwh, 2)} × ${fmt(O.dayCover, 0)}% = <b>${fmt(r.pvTargetKwh, 2)} kWh/วัน</b>`]);
+    } else if (type === 'hybrid') {
+      rows.push(['ไฟที่แผงต้องผลิต', `กลางวัน ${fmt(r.dayKwh, 2)} + (ไฟเข้าแบต ${fmt(r.battUsableReq, 2)} ÷ ${fmt(P.battEff, 0)}%) = <b>${fmt(r.pvTargetKwh, 2)} kWh/วัน</b>`]);
+    } else {
+      rows.push(['ไฟที่แผงต้องผลิต', `กลางวัน ${fmt(r.dayKwh, 2)} + (กลางคืน ${fmt(r.nightKwh, 2)} ÷ ${fmt(P.battEff, 0)}%) = <b>${fmt(r.pvTargetKwh, 2)} kWh/วัน</b>`]);
+    }
+    if (r.sizing !== 'target') rows.push(['ขนาดแผง', `${fmt(r.pvTargetKwh, 2)} ÷ ${fmt(r.designYield, 2)} = ${fmt(r.kwpReq, 2)} kWp → ${fmt(r.kwpReq * 1000, 0)} ÷ ${fmt(P.panelW)} W ปัดขึ้น = <b>${fmt(r.panels)} แผง = ${fmt(r.kwp, 2)} kWp</b>`]);
+    if (type !== 'ongrid' && r.sizing !== 'target') {
+      const need = type === 'hybrid'
+        ? `กลางคืน ${fmt(r.nightKwh, 2)} × ${fmt(O.nightCover, 0)}%`
+        : `กลางคืน ${fmt(r.nightKwh, 2)} + สำรอง ${fmt(O.autonomyDays, 1)} วัน × ${fmt(r.dailyKwh, 2)}`;
+      rows.push(['แบตเตอรี่', `${need} = ${fmt(r.battUsableReq, 2)} kWh ÷ DoD ${fmt(P.dod, 0)}% = ${fmt(r.battNominalReq, 2)} kWh → <b>${fmt(r.battModules)} ก้อน × ${fmt(P.battModuleKwh, 2)} = ${fmt(r.battNominal, 2)} kWh</b>`]);
+    }
+    rows.push(['อินเวอร์เตอร์', `จากแผง ${fmt(r.kwp, 2)} ÷ ${fmt(P.dcAc, 2)} = ${fmt(r.invByPv, 2)} kW${type !== 'ongrid' ? ` · จากโหลด ${fmt(r.app.peakW / 1000, 2)} × ${fmt(P.simultaneity, 0)}% × ${fmt(P.loadMargin, 0)}% = ${fmt(r.invByLoad, 2)} kW` : ''} → เลือกขนาดมาตรฐาน <b>${fmt(r.invKw, r.invKw % 1 ? 1 : 0)} kW</b>`]);
+    if (type !== 'offgrid') {
+      rows.push(['ค่าไฟหลังติดตั้ง', `ซื้อไฟ ${fmt(r.gridDaily, 2)} kWh/วัน × 30.42 = ${fmt(r.gridMonthly, 1)} kWh/เดือน → <b>${fmt(r.billAfter, 0)} บาท</b>${r.exportIncome > 0 ? ` · ขายไฟ ${fmt(r.exported * 30.42, 0)} kWh × ${fmt(P.exportPrice, 2)} = ${fmt(r.exportIncome, 0)} บาท` : ''}`]);
+    }
+    rows.push(['งบประมาณ', `แผง ${fmt(r.cost.pv, 0)} + อินเวอร์เตอร์ ${fmt(r.cost.inv, 0)}${r.cost.batt > 0 ? ` + แบต ${fmt(r.cost.batt, 0)}` : ''} + คงที่ ${fmt(r.cost.fixed, 0)} = <b>${fmt(r.cost.total, 0)} บาท</b>`]);
+    rows.push(['คืนทุน', r.paybackYears === null ? '–' : `${fmt(r.cost.total, 0)} ÷ (${fmt(r.savingMonthly, 0)} × 12) = <b>${fmt(r.paybackYears, 1)} ปี</b>`]);
+    $('#stepsBody').innerHTML = rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('');
+  }
+
+  function renderMini(r) {
+    const type = r.systemType;
+    $('#mini').innerHTML = `<span><b>${fmt(r.kwp, 2)}</b> kWp${type !== 'ongrid' && r.battNominal > 0 ? ` · แบต <b>${fmt(r.battNominal, 1)}</b> kWh` : ''} · ประหยัด ${fmt(r.savingMonthly, 0)} บ./ด.</span><a href="#results">ดูผล</a>`;
+  }
+
+  function summaryText(r) {
+    const P = state.params, type = r.systemType;
+    const lines = [
+      `ผลคำนวณระบบโซลาร์ (${TYPE_LABEL[type]}${r.sizing === 'target' ? ' ตามเป้าประหยัด ' + fmt(r.plan.target, 0) + ' บาท/เดือน' : ''})`,
+      `• การใช้ไฟ: ${fmt(r.monthlyKwh, 0)} kWh/เดือน (กลางวัน ${fmt(r.dayPct, 0)}% / กลางคืน ${fmt(100 - r.dayPct, 0)}%)`,
+      `• ขนาดระบบ: ${fmt(r.kwp, 2)} kWp (แผง ${fmt(P.panelW)} W × ${fmt(r.panels)} แผง)`,
+      `• อินเวอร์เตอร์: ${fmt(r.invKw, r.invKw % 1 ? 1 : 0)} kW`
+    ];
+    if (type !== 'ongrid' && r.battModules > 0) lines.push(`• แบตเตอรี่: ${fmt(r.battNominal, 2)} kWh (ใช้ได้ ${fmt(r.battUsable, 2)} kWh, ${fmt(r.battAh, 0)} Ah @ ${fmt(P.battV, 1)} V)`);
+    lines.push(`• พื้นที่หลังคาประมาณ ${fmt(r.roofArea, 1)} m² · น้ำหนักแผง ${fmt(r.panelWeight, 0)} กก.`);
+    lines.push(`• ผลิตไฟเฉลี่ย ${fmt(r.pvMonthly, 0)} kWh/เดือน`);
+    lines.push(`• ค่าไฟ: ${fmt(r.billBefore, 0)} → ${fmt(r.billAfter, 0)} บาท/เดือน (ประหยัดประมาณ ${fmt(r.savingMonthly, 0)} บาท/เดือน)`);
+    lines.push(`• งบประมาณประมาณ ${fmt(Math.round(r.cost.total / 1000) * 1000, 0)} บาท · คืนทุนประมาณ ${r.paybackYears === null ? '–' : fmt(r.paybackYears, 1)} ปี`);
+    lines.push('* ประมาณการเบื้องต้น ต้องสำรวจหน้างานก่อนออกแบบจริง');
+    lines.push(CONTACT_LINE);
+    return lines.join('\n');
+  }
+
+  async function copyText(text, okMsg) {
+    const box = $('#copyBox');
+    try {
+      await navigator.clipboard.writeText(text);
+      $('#copyStatus').textContent = okMsg;
+      box.hidden = true;
+    } catch (err) {
+      box.value = text;
+      box.hidden = false;
+      box.focus();
+      box.select();
+      $('#copyStatus').textContent = 'คัดลอกอัตโนมัติไม่ได้ ข้อความถูกเลือกไว้ด้านล่างแล้ว กด Ctrl+C หรือกดค้างเพื่อคัดลอก';
+    }
+  }
+
+  /* ---------- events ---------- */
+  function onChange() { saveState(); render(); }
+
+  function bind() {
+    $$('input[name="inputMode"]').forEach((r) => r.addEventListener('change', () => { state.inputMode = r.value; onChange(); }));
+    $$('input[name="sysType"]').forEach((r) => r.addEventListener('change', () => { state.systemType = r.value; onChange(); }));
+    $$('input[name="sizing"]').forEach((r) => r.addEventListener('change', () => { state.sizing = r.value; onChange(); }));
+    $('#targetSaving').addEventListener('input', (e) => { state.targetSaving = e.target.value; onChange(); });
+    $('#targetPicks').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-target]');
+      if (!b) return;
+      state.targetSaving = +b.dataset.target;
+      $('#targetSaving').value = state.targetSaving;
+      onChange();
+    });
+    $('#copyPhone').addEventListener('click', async (e) => {
+      const b = e.currentTarget;
+      try { await navigator.clipboard.writeText(PHONE); b.textContent = 'คัดลอกแล้ว'; }
+      catch (err) { b.textContent = PHONE; }
+      setTimeout(() => { b.textContent = 'คัดลอกเบอร์'; }, 2500);
+    });
+    $('#copyLink').addEventListener('click', () => copyText(APP_URL, 'คัดลอกลิงก์แล้ว ส่งให้คนอื่นเปิดใช้ได้เลย'));
+    $('#appLink').addEventListener('focus', (e) => e.target.select());
+    $('#bill').addEventListener('input', (e) => { state.bill = e.target.value; onChange(); });
+    $('#kwhMonth').addEventListener('input', (e) => { state.kwhMonth = e.target.value; onChange(); });
+    $('#tariffMode').addEventListener('change', (e) => { state.tariffMode = e.target.value; onChange(); });
+    $('#dayPct').addEventListener('input', (e) => { state.dayPct = num(e.target.value); onChange(); });
+    $('#useAppSplit').addEventListener('click', () => {
+      const s = SolarCalc.applianceSummary(state.appliances);
+      if (s.dayPct !== null) { state.dayPct = Math.round(s.dayPct); $('#dayPct').value = state.dayPct; onChange(); }
+    });
+    ['dayCover', 'nightCover', 'autonomyDays', 'rainyFactor'].forEach((k) =>
+      $('#' + k).addEventListener('input', (e) => { state.opts[k] = num(e.target.value); onChange(); }));
+    $('#exportOn').addEventListener('change', (e) => { state.exportOn = e.target.checked; onChange(); });
+    document.addEventListener('input', (e) => {
+      const k = e.target.dataset && e.target.dataset.param;
+      if (k) { state.params[k] = num(e.target.value); onChange(); }
+    });
+
+    $('#appBody').addEventListener('input', (e) => {
+      const tr = e.target.closest('tr[data-i]');
+      const k = e.target.dataset.k;
+      if (!tr || !k) return;
+      const a = state.appliances[+tr.dataset.i];
+      a[k] = k === 'name' ? e.target.value : num(e.target.value);
+      onChange();
+    });
+    $('#appBody').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-del]');
+      if (!b) return;
+      state.appliances.splice(+b.dataset.del, 1);
+      renderAppliances();
+      onChange();
+    });
+    $('#addApp').addEventListener('click', () => {
+      const p = PRESETS[+$('#preset').value];
+      state.appliances.push({ name: p[0], w: p[1], qty: 1, hDay: p[2], hNight: p[3] });
+      renderAppliances();
+      onChange();
+      const rows = $$('#appBody tr[data-i]');
+      const last = rows[rows.length - 1];
+      if (last) last.querySelector('input[data-k="qty"]').focus();
+    });
+    $('#resetAll').addEventListener('click', () => {
+      state = clone(DEFAULTS);
+      try { localStorage.removeItem(LS_KEY); } catch (e) { /* ignore */ }
+      writeControls();
+      render();
+    });
+
+    // tooltip
+    const tip = $('#tip'), flow = $('#flow');
+    flow.addEventListener('mousemove', (e) => {
+      const seg = e.target.closest('[data-tip]');
+      if (!seg) { tip.hidden = true; return; }
+      const fr = flow.getBoundingClientRect();
+      tip.textContent = seg.dataset.tip;
+      tip.hidden = false;
+      const x = Math.min(Math.max(e.clientX - fr.left, 90), fr.width - 90);
+      tip.style.left = x + 'px';
+      tip.style.top = (seg.getBoundingClientRect().top - fr.top) + 'px';
+    });
+    flow.addEventListener('mouseleave', () => { tip.hidden = true; });
+
+    // copy summary
+    $('#copySummary').addEventListener('click', () =>
+      copyText(summaryText(lastResult) + (APP_URL ? '\nคำนวณเองได้ที่ ' + APP_URL : ''), 'คัดลอกสรุปผลแล้ว วางในแชตหรืออีเมลได้เลย'));
+  }
+
+  function start(seed) {
+    state = loadState(seed);
+    buildParamGroups();
+    buildPresets();
+    writeControls();
+    bind();
+    render();
+  }
+
+  start({});
+
+  window.__solarDebug = { getState: () => state, getResult: () => lastResult, summaryText: () => summaryText(lastResult) };
+})();
+</script>
+</body>
+</html>
